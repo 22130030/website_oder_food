@@ -4,3 +4,6 @@ Website đặt đồ ăn trực tuyến sử dụng:
 - Backend: Spring Boot
 - Database: MySQL
 - Authentication: JWT
+# Thành viên:
++ 22130030 - Lê Minh Công
++ 22130018 - Hồ Quốc Bảo
