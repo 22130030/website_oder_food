@@ -1,0 +1,126 @@
+.food-card {
+  display: block;
+  text-decoration: none !important;
+  color: inherit;
+  background: white;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: var(--shadow);
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+  height: 100%;
+}
+
+.food-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.15);
+  text-decoration: none !important;
+}
+
+/* ==================== HÌNH ẢNH ==================== */
+.food-card-image {
+  position: relative;
+  height: 200px;
+  overflow: hidden;
+}
+
+.food-card-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.4s ease;
+}
+
+.food-card:hover .food-card-image img {
+  transform: scale(1.08);
+}
+
+.sold-out-badge {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 17px;
+  font-weight: 700;
+}
+
+.category-tag {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background: var(--primary);
+  color: white;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  z-index: 2;
+}
+
+/* ==================== NỘI DUNG ==================== */
+.food-card-body {
+  padding: 18px;
+}
+
+.food-name {
+  font-size: 17px;
+  font-weight: 700;
+  margin-bottom: 8px;
+  line-height: 1.4;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-decoration: none !important;
+  color: #222;
+}
+
+.food-desc {
+  font-size: 13.5px;
+  color: #777;
+  margin-bottom: 12px;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  line-height: 1.5;
+}
+
+.food-rating {
+  font-size: 13.5px;
+  color: #f39c12;
+  margin-bottom: 14px;
+}
+
+.food-card-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 8px;
+}
+
+.food-price {
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--primary);
+}
+
+.add-cart-btn {
+  border-radius: 25px !important;
+  padding: 8px 18px;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+/* Đảm bảo không có gạch chân nào */
+.food-card,
+.food-name,
+.food-card a {
+  text-decoration: none !important;
+}
+
+.food-card:hover .food-name {
+  color: var(--primary);
+}
