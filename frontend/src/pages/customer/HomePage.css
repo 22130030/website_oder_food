@@ -1,0 +1,179 @@
+/* ========== HERO ========== */
+.hero-section {
+  background: linear-gradient(135deg, #1a1a2e 0%, #c0392b 60%, #e74c3c 100%);
+  color: white;
+  padding: 80px 0;
+}
+
+/* ✅ hero-inner thay container — tự quản lý padding */
+.hero-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 48px;
+}
+
+.hero-content {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 60px;
+  align-items: center;
+}
+
+.hero-text h1 {
+  font-size: 52px;
+  font-weight: 900;
+  line-height: 1.15;
+  margin-bottom: 18px;
+}
+.hero-text h1 span { color: #ffd700; }
+
+.hero-text > p {
+  font-size: 17px;
+  opacity: 0.85;
+  margin-bottom: 32px;
+  line-height: 1.7;
+}
+
+.hero-search {
+  display: flex;
+  background: white;
+  border-radius: 50px;
+  overflow: hidden;
+  box-shadow: 0 8px 30px rgba(0,0,0,0.25);
+  max-width: 520px;
+}
+.hero-search input {
+  flex: 1;
+  border: none;
+  background: none;
+  padding: 14px 22px;
+  font-size: 15px;
+  color: #333;
+  outline: none;
+}
+.hero-search .btn {
+  border-radius: 50px !important;
+  padding: 14px 28px;
+  margin: 5px;
+  font-size: 15px;
+}
+
+.hero-stats {
+  display: flex;
+  gap: 36px;
+  margin-top: 36px;
+}
+.stat-item strong {
+  display: block;
+  font-size: 24px;
+  font-weight: 900;
+  line-height: 1;
+  margin-bottom: 4px;
+}
+.stat-item span {
+  font-size: 12px;
+  opacity: 0.7;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.hero-image {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.hero-emoji {
+  font-size: 160px;
+  animation: float 3s ease-in-out infinite;
+  filter: drop-shadow(0 20px 40px rgba(0,0,0,0.3));
+}
+@keyframes float {
+  0%, 100% { transform: translateY(0) rotate(-3deg); }
+  50%       { transform: translateY(-18px) rotate(3deg); }
+}
+
+/* ========== SECTIONS ========== */
+.home-section { padding: 64px 0; }
+
+/* ✅ home-inner thay container — tự quản lý padding */
+.home-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 48px;
+}
+
+.section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 28px;
+}
+.section-header h2 { font-size: 24px; font-weight: 800; color: #1a1a1a; }
+.see-all { color: var(--primary); font-weight: 600; font-size: 14px; transition: opacity 0.2s; }
+.see-all:hover { opacity: 0.75; }
+
+/* ========== CATEGORIES ========== */
+.categories-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 16px;
+}
+.category-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 28px 16px;
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.07);
+  font-size: 14px;
+  font-weight: 600;
+  color: #444;
+  border: 2px solid transparent;
+  transition: all 0.2s;
+}
+.category-card:hover {
+  transform: translateY(-4px);
+  color: var(--primary);
+  border-color: var(--primary);
+  box-shadow: 0 10px 24px rgba(231,76,60,0.15);
+}
+.cat-icon { font-size: 36px; }
+
+/* ========== FOODS GRID ========== */
+.foods-featured {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 20px;
+}
+
+/* ========== CTA ========== */
+.cta-section {
+  background: linear-gradient(135deg, #1a1a2e, #c0392b);
+  color: white;
+  padding: 80px 0;
+}
+.cta-section h2 { font-size: 36px; font-weight: 900; margin-bottom: 12px; }
+.cta-section p  { font-size: 17px; opacity: 0.85; margin-bottom: 32px; }
+.cta-buttons { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; }
+
+/* ========== RESPONSIVE ========== */
+@media (max-width: 900px) {
+  .hero-inner,
+  .home-inner { padding: 0 24px; }
+  .hero-content { grid-template-columns: 1fr; gap: 40px; }
+  .hero-text h1 { font-size: 36px; }
+  .hero-image { display: none; }
+  .foods-featured { grid-template-columns: repeat(2, 1fr); }
+  .categories-grid { grid-template-columns: repeat(3, 1fr); }
+}
+@media (max-width: 500px) {
+  .hero-inner,
+  .home-inner { padding: 0 16px; }
+  .hero-text h1 { font-size: 28px; }
+  .hero-stats { gap: 16px; }
+  .hero-search { max-width: 100%; }
+  .foods-featured { grid-template-columns: 1fr 1fr; }
+  .categories-grid { grid-template-columns: repeat(2, 1fr); }
+}
