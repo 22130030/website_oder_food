@@ -7,6 +7,9 @@ import FoodDetailPage from '../pages/customer/FoodDetailPage';
 import LoginPage from '../pages/auth/LoginPage';
 import RegisterPage from '../pages/auth/RegisterPage';
 import ForgotPasswordPage from '../pages/auth/ForgotPasswordPage';
+import CartPage from '../pages/customer/CartPage';
+import CheckoutPage from '../pages/customer/CheckoutPage';
+import ChatPage from '../pages/customer/ChatPage';
 
 function App() {
   return (
@@ -20,6 +23,9 @@ function App() {
           <Route path="/forgot-password" element={<ForgotPasswordPage />} />
 
           <Route path="/home" element={<HomePage />} />
+          <Route path="/cart" element={<CartPage />} />
+          <Route path="/chat" element={<ChatPage />} />
+          <Route path="/checkout" element={<CheckoutPage />} />
           <Route path="/food/:id" element={<FoodDetailPage />} />
         </Routes>
         </CartProvider>
