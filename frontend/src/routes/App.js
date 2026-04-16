@@ -10,6 +10,7 @@ import ForgotPasswordPage from '../pages/auth/ForgotPasswordPage';
 import CartPage from '../pages/customer/CartPage';
 import CheckoutPage from '../pages/customer/CheckoutPage';
 import ChatPage from '../pages/customer/ChatPage';
+import MenuPage from '../pages/customer/MenuPage';
 
 function App() {
   return (
@@ -27,6 +28,7 @@ function App() {
           <Route path="/chat" element={<ChatPage />} />
           <Route path="/checkout" element={<CheckoutPage />} />
           <Route path="/food/:id" element={<FoodDetailPage />} />
+          <Route path="/menu" element={<MenuPage />} />
         </Routes>
         </CartProvider>
       </AuthProvider>
