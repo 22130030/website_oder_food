@@ -11,6 +11,9 @@ import CartPage from '../pages/customer/CartPage';
 import CheckoutPage from '../pages/customer/CheckoutPage';
 import ChatPage from '../pages/customer/ChatPage';
 import MenuPage from '../pages/customer/MenuPage';
+import OrderDetailPage from '../pages/customer/OrderDetailPage';
+import OrderHistoryPage from '../pages/customer/OrderHistoryPage';
+import ProfilePage from '../pages/customer/ProfilePage';
 
 function App() {
   return (
@@ -29,6 +32,9 @@ function App() {
           <Route path="/checkout" element={<CheckoutPage />} />
           <Route path="/food/:id" element={<FoodDetailPage />} />
           <Route path="/menu" element={<MenuPage />} />
+          <Route path="/orders/:id" element={<OrderDetailPage />} />
+          <Route path="/orders" element={<OrderHistoryPage />} />
+          <Route path="/profile" element={<ProfilePage />} />
         </Routes>
         </CartProvider>
       </AuthProvider>
