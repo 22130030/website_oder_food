@@ -1,47 +1,26 @@
-// API service for authentication and other requests
-const API_BASE_URL = 'http://localhost:5000'; // Change this to your actual API URL
+import axios from 'axios';
+
+const api = axios.create({
+  baseURL: 'http://localhost:8080/api',
+  headers: {
+    'Content-Type': 'application/json',
+  },
+});
+
+api.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => Promise.reject(error)
+);
 
 export const authAPI = {
-  login: async (credentials) => {
-    try {
-      const response = await fetch(`${API_BASE_URL}/auth/login`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(credentials),
-      });
-      if (!response.ok) {
-        const error = await response.json();
-        const err = new Error(error.message || 'Login failed');
-        err.response = { data: error };
-        throw err;
-      }
-      return await response.json();
-    } catch (error) {
-      throw error;
-    }
-  },
-  register: async (userData) => {
-    try {
-      const response = await fetch(`${API_BASE_URL}/auth/register`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(userData),
-      });
-      if (!response.ok) {
-        const error = await response.json();
-        const err = new Error(error.message || 'Registration failed');
-        err.response = { data: error };
-        throw err;
-      }
-      return await response.json();
-    } catch (error) {
-      throw error;
-    }
-  },
+  register: (data) => api.post('/auth/register', data),
+  login: (data) => api.post('/auth/login', data),
 };
 
-export default authAPI;
+export default api;

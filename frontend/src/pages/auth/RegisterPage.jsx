@@ -1,44 +1,59 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
-import { useAuth } from '../../context/AuthContext';
+import { Link, useNavigate } from 'react-router-dom';
+import { toast } from 'react-toastify';
 import { authAPI } from '../../services/api';
 import './AuthPage.css';
 
 const RegisterPage = () => {
-  const { login } = useAuth();
-  const [form, setForm] = useState({ 
-    email: '', 
-    password: '', 
-    passwordConfirm: '',
-    firstName: '',
-    lastName: ''
+  const navigate = useNavigate();
+
+  const [form, setForm] = useState({
+    fullName: '',
+    email: '',
+    phone: '',
+    password: '',
+    passwordConfirm: ''
   });
+
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
-  const handleChange = e => setForm({ ...form, [e.target.name]: e.target.value });
+  const handleChange = (e) => {
+    setForm({ ...form, [e.target.name]: e.target.value });
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
-    
+
     if (form.password !== form.passwordConfirm) {
-      setError('Mật khẩu không khớp!');
+      setError('Mật khẩu xác nhận không khớp!');
+      toast.error('Mật khẩu xác nhận không khớp!');
       return;
     }
 
     setLoading(true);
+
     try {
-      const res = await authAPI.register({
-        email: form.email,
-        password: form.password,
-        firstName: form.firstName,
-        lastName: form.lastName
+      await authAPI.register({
+        fullName: form.fullName.trim(),
+        email: form.email.trim().toLowerCase(),
+        phone: form.phone.trim(),
+        password: form.password
       });
-      login(res.data.user, res.data.token);
-      alert('Đăng ký thành công!');
+
+      toast.success('Đăng ký thành công! Vui lòng đăng nhập.');
+    setTimeout(() => {
+      navigate('/login');
+    }, 1200);
     } catch (err) {
-      setError(err.response?.data?.message || 'Đăng ký thất bại!');
+      const message =
+      err.response?.data?.message ||
+      err.response?.data?.error ||
+      'Đăng ký thất bại!';
+
+    setError(message);
+    toast.error(message);
     } finally {
       setLoading(false);
     }
@@ -59,6 +74,7 @@ const RegisterPage = () => {
           </div>
         </div>
       </div>
+
       <div className="auth-right">
         <div className="auth-form-container">
           <h2>Đăng ký</h2>
@@ -68,61 +84,66 @@ const RegisterPage = () => {
 
           <form onSubmit={handleSubmit}>
             <div className="form-group">
-              <label>Họ</label>
-              <input 
-                type="text" 
-                name="firstName" 
-                placeholder="Nhập họ của bạn" 
-                value={form.firstName} 
-                onChange={handleChange} 
-                required 
+              <label>Họ và tên</label>
+              <input
+                type="text"
+                name="fullName"
+                placeholder="Nhập họ và tên"
+                value={form.fullName}
+                onChange={handleChange}
+                required
               />
             </div>
-            <div className="form-group">
-              <label>Tên</label>
-              <input 
-                type="text" 
-                name="lastName" 
-                placeholder="Nhập tên của bạn" 
-                value={form.lastName} 
-                onChange={handleChange} 
-                required 
-              />
-            </div>
+
             <div className="form-group">
               <label>Email</label>
-              <input 
-                type="email" 
-                name="email" 
-                placeholder="example@email.com" 
-                value={form.email} 
-                onChange={handleChange} 
-                required 
+              <input
+                type="email"
+                name="email"
+                placeholder="example@email.com"
+                value={form.email}
+                onChange={handleChange}
+                required
               />
             </div>
+
+            <div className="form-group">
+              <label>Số điện thoại</label>
+              <input
+                type="text"
+                name="phone"
+                placeholder="Nhập số điện thoại"
+                value={form.phone}
+                onChange={handleChange}
+                required
+              />
+            </div>
+
             <div className="form-group">
               <label>Mật khẩu</label>
-              <input 
-                type="password" 
-                name="password" 
-                placeholder="Nhập mật khẩu (tối thiểu 6 ký tự)" 
-                value={form.password} 
-                onChange={handleChange} 
-                required 
+              <input
+                type="password"
+                name="password"
+                placeholder="Nhập mật khẩu"
+                value={form.password}
+                onChange={handleChange}
+                required
                 minLength={6}
               />
             </div>
+
             <div className="form-group">
               <label>Xác nhận mật khẩu</label>
-              <input 
-                type="password" 
-                name="passwordConfirm" 
-                placeholder="Nhập lại mật khẩu" 
-                value={form.passwordConfirm} 
-                onChange={handleChange} 
-                required 
+              <input
+                type="password"
+                name="passwordConfirm"
+                placeholder="Nhập lại mật khẩu"
+                value={form.passwordConfirm}
+                onChange={handleChange}
+                required
               />
             </div>
+
             <button type="submit" className="btn btn-primary btn-full" disabled={loading}>
               {loading ? '⏳ Đang đăng ký...' : '🚀 Đăng ký'}
             </button>
