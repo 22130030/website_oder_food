@@ -23,4 +23,26 @@ export const authAPI = {
   login: (data) => api.post('/auth/login', data),
 };
 
+export const adminFoodAPI = {
+  getFoods: () => api.get('/admin/foods'),
+  getCategories: () => api.get('/admin/categories'),
+  createFood: (data) => api.post('/admin/foods', data),
+  updateFood: (id, data) => api.put(`/admin/foods/${id}`, data),
+  deleteFood: (id) => api.delete(`/admin/foods/${id}`),
+  toggleAvailability: (id) => api.patch(`/admin/foods/${id}/availability`),
+};
+
+export const uploadAPI = {
+  uploadImage: (file) => {
+    const formData = new FormData();
+    formData.append('file', file);
+
+    return api.post('/admin/upload-image', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+  },
+};
+
 export default api;
