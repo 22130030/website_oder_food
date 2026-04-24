@@ -45,4 +45,12 @@ export const uploadAPI = {
   },
 };
 
+export const adminUserAPI = {
+  getUsers: (keyword = '') => api.get('/admin/users', { params: { keyword } }),
+  getUserById: (id) => api.get(`/admin/users/${id}`),
+  updateUser: (id, data) => api.put(`/admin/users/${id}`, data),
+  toggleActive: (id) => api.patch(`/admin/users/${id}/toggle-active`),
+  updateRole: (id, role) => api.patch(`/admin/users/${id}/role`, { role }),
+};
+
 export default api;
