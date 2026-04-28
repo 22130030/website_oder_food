@@ -58,6 +58,7 @@ public class SecurityConfig {
                                 "/api/auth/**",
                                 "/error"
                         ).permitAll()
+                        .requestMatchers("/api/auth/**", "/error", "/uploads/**").permitAll()
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
                         .requestMatchers("/api/user/**").hasAnyRole("CUSTOMER", "ADMIN")
                         .anyRequest().authenticated()
