@@ -1,10 +1,13 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
+import { GoogleLogin } from '@react-oauth/google';
+import { useAuth } from '../../context/AuthContext';
 import { authAPI } from '../../services/api';
 import './AuthPage.css';
 
 const RegisterPage = () => {
+  const { login } = useAuth();
   const navigate = useNavigate();
 
   const [form, setForm] = useState({
@@ -43,20 +46,50 @@ const RegisterPage = () => {
       });
 
       toast.success('Đăng ký thành công! Vui lòng đăng nhập.');
-    setTimeout(() => {
-      navigate('/login');
-    }, 1200);
+      setTimeout(() => {
+        navigate('/login');
+      }, 1200);
     } catch (err) {
       const message =
-      err.response?.data?.message ||
-      err.response?.data?.error ||
-      'Đăng ký thất bại!';
+        err.response?.data?.message ||
+        err.response?.data?.error ||
+        'Đăng ký thất bại!';
 
-    setError(message);
-    toast.error(message);
+      setError(message);
+      toast.error(message);
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleGoogleSuccess = async (credentialResponse) => {
+    try {
+      const response = await authAPI.googleLogin(credentialResponse.credential);
+      const data = response.data;
+
+      const userData = {
+        email: data.email,
+        role: data.role,
+        fullName: data.fullName || data.email
+      };
+
+      login(userData, data.token);
+      toast.success('Đăng nhập Google thành công!');
+      setTimeout(() => {
+        navigate('/home');
+      }, 1000);
+    } catch (err) {
+      const message =
+        err.response?.data?.message ||
+        err.response?.data?.error ||
+        'Đăng nhập Google thất bại!';
+      setError(message);
+      toast.error(message);
+    }
+  };
+
+  const handleGoogleError = () => {
+    toast.error('Đăng nhập Google thất bại. Vui lòng thử lại!');
   };
 
   return (
@@ -81,6 +114,21 @@ const RegisterPage = () => {
           <p className="auth-subtitle">Tạo tài khoản để bắt đầu đặt hàng!</p>
 
           {error && <div className="alert alert-error">❌ {error}</div>}
+
+          {/* Đăng nhập Google nhanh — đặt trên đầu cho tiện */}
+          <div className="google-login-wrapper" style={{ marginBottom: '16px' }}>
+            <GoogleLogin
+              onSuccess={handleGoogleSuccess}
+              onError={handleGoogleError}
+              useOneTap={false}
+              text="signup_with"
+              shape="rectangular"
+              locale="vi"
+              width="100%"
+            />
+          </div>
+
+          <div className="auth-divider"><span>hoặc đăng ký bằng email</span></div>
 
           <form onSubmit={handleSubmit}>
             <div className="form-group">
@@ -149,8 +197,7 @@ const RegisterPage = () => {
             </button>
           </form>
 
-          <div className="auth-divider"><span>hoặc</span></div>
-          <p className="auth-switch">
+          <p className="auth-switch" style={{ marginTop: '16px' }}>
             Đã có tài khoản? <Link to="/login" className="link-primary">Đăng nhập ngay</Link>
           </p>
         </div>

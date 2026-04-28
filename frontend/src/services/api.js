@@ -21,6 +21,8 @@ api.interceptors.request.use(
 export const authAPI = {
   register: (data) => api.post('/auth/register', data),
   login: (data) => api.post('/auth/login', data),
+  // Gửi idToken (credential) từ Google lên backend để xác thực
+  googleLogin: (idToken) => api.post('/auth/google', { idToken })
 };
 
 export const adminFoodAPI = {

@@ -92,3 +92,16 @@
   .social-login { flex-direction: column; }
   .btn-social { width: 100%; }
 }
+.google-login-wrapper {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+}
+
+.google-login-wrapper > div {
+  width: 100% !important;
+}
+
+.google-login-wrapper iframe {
+  width: 100% !important;
+}

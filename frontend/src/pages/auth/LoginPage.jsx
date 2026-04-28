@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
+import { GoogleLogin } from '@react-oauth/google';
 import { useAuth } from '../../context/AuthContext';
 import { authAPI } from '../../services/api';
 import './AuthPage.css';
@@ -21,6 +22,16 @@ const LoginPage = () => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
+  const handleRedirect = (role) => {
+    setTimeout(() => {
+      if (role === 'ADMIN') {
+        navigate('/admin');
+      } else {
+        navigate('/home');
+      }
+    }, 1000);
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
@@ -33,6 +44,32 @@ const LoginPage = () => {
       });
 
       const data = response.data;
+      const userData = {
+        email: data.email,
+        role: data.role,
+        fullName: data.fullName || data.email
+      };
+
+      login(userData, data.token);
+      toast.success('Đăng nhập thành công!');
+      handleRedirect(data.role);
+    } catch (err) {
+      const message =
+        err.response?.data?.message ||
+        err.response?.data?.error ||
+        'Email hoặc mật khẩu không đúng!';
+
+      setError(message);
+      toast.error(message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleGoogleSuccess = async (credentialResponse) => {
+    try {
+      const response = await authAPI.googleLogin(credentialResponse.credential);
+      const data = response.data;
 
       const userData = {
         email: data.email,
@@ -41,27 +78,20 @@ const LoginPage = () => {
       };
 
       login(userData, data.token);
-
-      toast.success('Đăng nhập thành công!');
-
-      setTimeout(() => {
-      if (data.role === 'ADMIN') {
-        navigate('/admin');
-      } else {
-        navigate('/home');
-      }
-    }, 1000);
+      toast.success('Đăng nhập Google thành công!');
+      handleRedirect(data.role);
     } catch (err) {
       const message =
-      err.response?.data?.message ||
-      err.response?.data?.error ||
-      'Email hoặc mật khẩu không đúng!';
-
-    setError(message);
-    toast.error(message);
-    } finally {
-      setLoading(false);
+        err.response?.data?.message ||
+        err.response?.data?.error ||
+        'Đăng nhập Google thất bại!';
+      setError(message);
+      toast.error(message);
     }
+  };
+
+  const handleGoogleError = () => {
+    toast.error('Đăng nhập Google thất bại. Vui lòng thử lại!');
   };
 
   return (
@@ -112,7 +142,21 @@ const LoginPage = () => {
           </form>
 
           <div className="auth-divider"><span>hoặc</span></div>
-          <p className="auth-switch">
+
+          {/* Nút đăng nhập Google */}
+          <div className="google-login-wrapper">
+            <GoogleLogin
+              onSuccess={handleGoogleSuccess}
+              onError={handleGoogleError}
+              useOneTap={false}
+              text="signin_with"
+              shape="rectangular"
+              locale="vi"
+              width="100%"
+            />
+          </div>
+
+          <p className="auth-switch" style={{ marginTop: '16px' }}>
             Chưa có tài khoản? <Link to="/register" className="link-primary">Đăng ký ngay</Link>
           </p>
         </div>
