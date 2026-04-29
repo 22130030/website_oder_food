@@ -112,7 +112,32 @@
   padding: 8px 18px;
   font-size: 14px;
   font-weight: 600;
+  transition: all 0.3s ease;
 }
+
+.add-cart-btn:hover:not(:disabled) {
+  transform: scale(1.05);
+}
+
+.add-cart-btn.added {
+  background-color: #27ae60 !important;
+  border-color: #27ae60 !important;
+  animation: pulse-success 0.5s ease;
+}
+
+@keyframes pulse-success {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+/* ==================== ACCESSIBILITY ==================== */
 
 /* Đảm bảo không có gạch chân nào */
 .food-card,
@@ -123,4 +148,9 @@
 
 .food-card:hover .food-name {
   color: var(--primary);
+}
+
+.add-cart-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }

@@ -46,6 +46,7 @@ export const uploadAPI = {
     });
   },
 };
+export const getFoods = (params = {}) => api.get('/foods', { params });
 
 export const adminUserAPI = {
   getUsers: (keyword = '') => api.get('/admin/users', { params: { keyword } }),
