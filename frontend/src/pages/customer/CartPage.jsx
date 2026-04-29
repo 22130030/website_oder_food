@@ -5,10 +5,38 @@ import Footer from '../../components/common/Footer';
 import { useCart } from '../../context/CartContext';
 import './CartPage.css';
 
+// ==================== CART PAGE ====================
+
 const CartPage = () => {
-  const { cartItems, updateQuantity, removeFromCart, clearCart, totalItems, totalPrice } = useCart();
+  // ==================== HOOKS ====================
+
+  const { cartItems, updateQuantity, removeFromCart, clearCart, totalPrice } =
+    useCart();
   const navigate = useNavigate();
+
+  // ==================== CONSTANTS ====================
+
   const shippingFee = totalPrice >= 200000 ? 0 : 20000;
+  const freeShipThreshold = 200000;
+  const remainingForFreeShip = Math.max(0, freeShipThreshold - totalPrice);
+  const totalQuantity = cartItems.reduce((sum, item) => sum + item.quantity, 0);
+  const finalTotal = totalPrice + shippingFee;
+
+  // ==================== HANDLERS ====================
+
+  const handleIncreaseQuantity = (item) => {
+    updateQuantity(item.id, item.quantity + 1);
+  };
+
+  const handleDecreaseQuantity = (item) => {
+    if (item.quantity > 1) {
+      updateQuantity(item.id, item.quantity - 1);
+    } else {
+      removeFromCart(item.id);
+    }
+  };
+
+  // ==================== EMPTY CART RENDER ====================
 
   if (cartItems.length === 0) {
     return (
@@ -29,19 +57,22 @@ const CartPage = () => {
     );
   }
 
+  // ==================== CART PAGE RENDER ====================
+
   return (
     <div className="page-wrapper">
       <Navbar />
 
       <div className="cart-page">
         <div className="container">
+          {/* ========== CART HEADER ========== */}
           <div className="cart-header">
             <h1>
               <span className="emoji">🛒</span> Giỏ hàng của bạn
             </h1>
             {cartItems.length > 0 && (
-              <button 
-                className="btn btn-outline-danger btn-sm" 
+              <button
+                className="btn btn-outline-danger btn-sm"
                 onClick={clearCart}
               >
                 🗑️ Xóa tất cả
@@ -50,13 +81,16 @@ const CartPage = () => {
           </div>
 
           <div className="cart-layout">
-            {/* Danh sách sản phẩm */}
+            {/* ========== CART ITEMS LIST ========== */}
             <div className="cart-items">
-              {cartItems.map(item => (
+              {cartItems.map((item) => (
                 <div key={item.id} className="cart-item">
-                  <img 
-                    src={item.imageUrl || 'https://via.placeholder.com/100x100?text=Food'} 
-                    alt={item.name} 
+                  <img
+                    src={
+                      item.imageUrl ||
+                      'https://via.placeholder.com/100x100?text=Food'
+                    }
+                    alt={item.name}
                   />
                   <div className="item-info">
                     <h3>{item.name}</h3>
@@ -68,17 +102,21 @@ const CartPage = () => {
                       </div>
 
                       <div className="item-qty">
-                        <button onClick={() => updateQuantity(item.id, item.quantity - 1)}>-</button>
+                        <button onClick={() => handleDecreaseQuantity(item)}>
+                          −
+                        </button>
                         <span>{item.quantity}</span>
-                        <button onClick={() => updateQuantity(item.id, item.quantity + 1)}>+</button>
+                        <button onClick={() => handleIncreaseQuantity(item)}>
+                          +
+                        </button>
                       </div>
 
                       <div className="item-subtotal">
                         {(item.price * item.quantity).toLocaleString('vi-VN')}đ
                       </div>
 
-                      <button 
-                        className="remove-btn" 
+                      <button
+                        className="remove-btn"
                         onClick={() => removeFromCart(item.id)}
                         title="Xóa món"
                       >
@@ -90,13 +128,13 @@ const CartPage = () => {
               ))}
             </div>
 
-            {/* Tóm tắt đơn hàng */}
+            {/* ========== ORDER SUMMARY ========== */}
             <div className="cart-summary">
               <h3>📋 Tóm tắt đơn hàng</h3>
-              
+
               <div className="summary-row">
                 <span>Số lượng</span>
-                <strong>{totalItems} món</strong>
+                <strong>{totalQuantity} món</strong>
               </div>
               <div className="summary-row">
                 <span>Tạm tính</span>
@@ -115,7 +153,8 @@ const CartPage = () => {
 
               {shippingFee > 0 && (
                 <p className="shipping-note">
-                  Mua thêm {(200000 - totalPrice).toLocaleString('vi-VN')}đ để được freeship
+                  Mua thêm {remainingForFreeShip.toLocaleString('vi-VN')}đ để
+                  được freeship
                 </p>
               )}
 
@@ -124,12 +163,12 @@ const CartPage = () => {
               <div className="summary-total">
                 <span>Tổng cộng</span>
                 <strong className="total-amount">
-                  {(totalPrice + shippingFee).toLocaleString('vi-VN')}đ
+                  {finalTotal.toLocaleString('vi-VN')}đ
                 </strong>
               </div>
 
-              <button 
-                className="btn btn-primary btn-full" 
+              <button
+                className="btn btn-primary btn-full"
                 onClick={() => navigate('/checkout')}
               >
                 🚀 Thanh toán ngay

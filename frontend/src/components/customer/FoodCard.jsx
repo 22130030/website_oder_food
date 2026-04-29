@@ -1,43 +1,70 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useCart } from '../../context/CartContext';
 import './FoodCard.css';
 
+// ==================== FOOD CARD COMPONENT ====================
+
 const FoodCard = ({ food }) => {
+  // ==================== HOOKS ====================
+
   const { addToCart } = useCart();
+  const [isAdded, setIsAdded] = useState(false);
+
+  // ==================== HANDLERS ====================
 
   const handleAddToCart = (e) => {
-    e.preventDefault();        // Ngăn link bị click
+    e.preventDefault();
+    e.stopPropagation();
+
     addToCart(food);
+
+    // Show feedback animation
+    setIsAdded(true);
+    setTimeout(() => setIsAdded(false), 1500);
   };
+
+  // ==================== RENDER ====================
 
   return (
     <Link to={`/food/${food.id}`} className="food-card">
+      {/* ========== CARD IMAGE ========== */}
       <div className="food-card-image">
-        <img 
-          src={food.imageUrl || 'https://via.placeholder.com/300x200?text=Mon+An'} 
-          alt={food.name} 
+        <img
+          src={
+            food.imageUrl ||
+            'https://via.placeholder.com/300x200?text=Mon+An'
+          }
+          alt={food.name}
         />
         {!food.available && <div className="sold-out-badge">Hết món</div>}
         <span className="category-tag">{food.category}</span>
       </div>
 
+      {/* ========== CARD BODY ========== */}
       <div className="food-card-body">
         <h3 className="food-name">{food.name}</h3>
         <p className="food-desc">{food.description}</p>
-        
+
         <div className="food-rating">
-          {'⭐'.repeat(Math.round(food.rating || 4))} ({food.reviewCount || 0} đánh giá)
+          {'⭐'.repeat(Math.round(food.rating || 4))} ({food.reviewCount || 0}{' '}
+          đánh giá)
         </div>
 
+        {/* ========== CARD FOOTER ========== */}
         <div className="food-card-footer">
-          <span className="food-price">{food.price.toLocaleString('vi-VN')}đ</span>
+          <span className="food-price">
+            {food.price.toLocaleString('vi-VN')}đ
+          </span>
           <button
-            className="btn btn-primary btn-sm add-cart-btn"
+            className={`btn btn-primary btn-sm add-cart-btn ${
+              isAdded ? 'added' : ''
+            }`}
             onClick={handleAddToCart}
             disabled={!food.available}
+            title={food.available ? 'Thêm vào giỏ hàng' : 'Món này đã hết'}
           >
-            🛒 Thêm
+            {isAdded ? '✓ Thêm rồi' : '🛒 Thêm'}
           </button>
         </div>
       </div>
