@@ -45,6 +45,7 @@ const LoginPage = () => {
 
       const data = response.data;
       const userData = {
+        userId: data.userId || data.id,
         email: data.email,
         role: data.role,
         fullName: data.fullName || data.email
@@ -72,6 +73,7 @@ const LoginPage = () => {
       const data = response.data;
 
       const userData = {
+        userId: data.userId || data.id,
         email: data.email,
         role: data.role,
         fullName: data.fullName || data.email

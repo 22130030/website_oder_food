@@ -3,7 +3,7 @@ import AdminLayout from '../../components/admin/AdminLayout';
 import './AdminDashboard.css';
 
 const STATS = [
-  { icon: '💰', label: 'Doanh thu hôm nay', value: '2,450,000đ', change: '+12%', color: '#27ae60' },
+  { icon: '💰', label: 'Doanh thu hôm nay', value: '2,450,000đ', change: '+12%', color: '#e74c3c' },
   { icon: '📦', label: 'Đơn hàng hôm nay', value: '38', change: '+5', color: '#3498db' },
   { icon: '👥', label: 'Khách hàng mới', value: '7', change: '+3', color: '#9b59b6' },
   { icon: '🍔', label: 'Món ăn đang bán', value: '124', change: '+2', color: '#e67e22' },
@@ -25,10 +25,10 @@ const TOP_FOODS = [
 ];
 
 const STATUS_MAP = {
-  PENDING: { label: 'Chờ xác nhận', badge: 'badge-warning' },
+  PENDING:   { label: 'Chờ xác nhận', badge: 'badge-warning' },
   PREPARING: { label: 'Đang chuẩn bị', badge: 'badge-info' },
-  DELIVERING: { label: 'Đang giao', badge: 'badge-secondary' },
-  COMPLETED: { label: 'Hoàn thành', badge: 'badge-success' },
+  DELIVERING:{ label: 'Đang giao',    badge: 'badge-secondary' },
+  COMPLETED: { label: 'Hoàn thành',   badge: 'badge-success' },
 };
 
 const AdminDashboard = () => {
@@ -42,14 +42,18 @@ const AdminDashboard = () => {
   return (
     <AdminLayout title="📊 Dashboard">
       <div className="dashboard-time">
-        {currentTime.toLocaleDateString('vi-VN', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+        {currentTime.toLocaleDateString('vi-VN', {
+          weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
+        })}
       </div>
 
       {/* Stats Grid */}
       <div className="stats-grid">
         {STATS.map((stat, i) => (
-          <div key={i} className="stat-card card">
-            <div className="stat-icon" style={{ background: stat.color + '20', color: stat.color }}>{stat.icon}</div>
+          <div key={i} className="stat-card">
+            <div className="stat-icon" style={{ background: stat.color + '18', color: stat.color }}>
+              {stat.icon}
+            </div>
             <div className="stat-info">
               <p className="stat-label">{stat.label}</p>
               <h3 className="stat-value">{stat.value}</h3>
@@ -61,7 +65,7 @@ const AdminDashboard = () => {
 
       <div className="dashboard-grid">
         {/* Recent Orders */}
-        <div className="dashboard-section card">
+        <div className="dashboard-section">
           <div className="section-header-admin">
             <h3>📋 Đơn hàng mới nhất</h3>
             <a href="/admin/orders" className="see-all-admin">Xem tất cả →</a>
@@ -85,7 +89,11 @@ const AdminDashboard = () => {
                     <td>{order.customer}</td>
                     <td className="text-muted">{order.items}</td>
                     <td><strong>{order.total.toLocaleString('vi-VN')}đ</strong></td>
-                    <td><span className={`badge ${STATUS_MAP[order.status]?.badge}`}>{STATUS_MAP[order.status]?.label}</span></td>
+                    <td>
+                      <span className={`badge ${STATUS_MAP[order.status]?.badge}`}>
+                        {STATUS_MAP[order.status]?.label}
+                      </span>
+                    </td>
                     <td className="text-muted">{order.time}</td>
                   </tr>
                 ))}
@@ -95,7 +103,7 @@ const AdminDashboard = () => {
         </div>
 
         {/* Top Foods */}
-        <div className="dashboard-section card">
+        <div className="dashboard-section">
           <div className="section-header-admin">
             <h3>🔥 Món bán chạy nhất</h3>
           </div>

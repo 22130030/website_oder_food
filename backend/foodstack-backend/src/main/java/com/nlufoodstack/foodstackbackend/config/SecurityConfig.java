@@ -56,11 +56,15 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
                                 "/api/auth/**",
-                                "/error"
+                                "/error",
+                                "/uploads/**",
+                                "/ws-chat/**"
                         ).permitAll()
-                        .requestMatchers("/api/auth/**", "/error", "/uploads/**").permitAll()
+                       // .requestMatchers("/api/auth/**", "/error", "/uploads/**").permitAll()
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
+                        .requestMatchers("/api/chat/admin/**").hasRole("ADMIN")
                         .requestMatchers("/api/user/**").hasAnyRole("CUSTOMER", "ADMIN")
+                        .requestMatchers("/api/chat/**").hasAnyRole("CUSTOMER", "ADMIN")
                         .anyRequest().authenticated()
                 )
                 .authenticationProvider(authenticationProvider())

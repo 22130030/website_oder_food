@@ -55,4 +55,25 @@ export const adminUserAPI = {
   updateRole: (id, role) => api.patch(`/admin/users/${id}/role`, { role }),
 };
 
+export const chatAPI = {
+  getMessagesByCustomer: (customerId) => api.get(`/chat/customer/${customerId}`),
+  getConversations: () => api.get('/chat/admin/conversations'),
+
+  getAdminUnreadCount: () => api.get('/chat/admin/unread-count'),
+  getCustomerUnreadCount: (customerId) => api.get(`/chat/customer/${customerId}/unread-count`),
+
+  markAdminConversationRead: (customerId) =>
+    api.patch(`/chat/admin/conversations/${customerId}/read`),
+
+  markCustomerChatRead: (customerId) =>
+    api.patch(`/chat/customer/${customerId}/read`),
+
+  uploadChatImage: (formData) =>
+    api.post('/chat/upload-image', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    }),
+};
+
 export default api;

@@ -173,3 +173,17 @@
 .nav-link.active::after {
   width: 40%;
 }
+.support-link {
+  position: relative;
+}
+
+.chat-red-dot {
+  position: absolute;
+  top: 6px;
+  right: 8px;
+  width: 9px;
+  height: 9px;
+  background: red;
+  border-radius: 50%;
+  border: 2px solid white;
+}
