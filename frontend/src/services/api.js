@@ -25,6 +25,12 @@ export const authAPI = {
   googleLogin: (idToken) => api.post('/auth/google', { idToken })
 };
 
+export const foodAPI = {
+  getFoods: (params = {}) => api.get('/foods', { params }),
+  getFoodById: (id) => api.get(`/foods/${id}`),
+  getCategories: () => api.get('/categories'),
+};
+
 export const adminFoodAPI = {
   getFoods: () => api.get('/admin/foods'),
   getCategories: () => api.get('/admin/categories'),
@@ -54,6 +60,42 @@ export const adminUserAPI = {
   updateUser: (id, data) => api.put(`/admin/users/${id}`, data),
   toggleActive: (id) => api.patch(`/admin/users/${id}/toggle-active`),
   updateRole: (id, role) => api.patch(`/admin/users/${id}/role`, { role }),
+};
+
+export const chatAPI = {
+  getMessagesByCustomer: (customerId) => api.get(`/chat/customer/${customerId}`),
+  getConversations: () => api.get('/chat/admin/conversations'),
+
+  getAdminUnreadCount: () => api.get('/chat/admin/unread-count'),
+  getCustomerUnreadCount: (customerId) => api.get(`/chat/customer/${customerId}/unread-count`),
+
+  markAdminConversationRead: (customerId) =>
+    api.patch(`/chat/admin/conversations/${customerId}/read`),
+
+  markCustomerChatRead: (customerId) =>
+    api.patch(`/chat/customer/${customerId}/read`),
+
+  uploadChatImage: (formData) =>
+    api.post('/chat/upload-image', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    }),
+};
+export const profileAPI = {
+  getProfile: (userId) => api.get(`/profile/${userId}`),
+
+  updateProfile: (userId, data) => api.put(`/profile/${userId}`, data),
+
+  uploadAvatar: (formData) =>
+    api.post('/profile/upload-avatar', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    }),
+
+  changePassword: (userId, data) =>
+    api.put(`/profile/${userId}/change-password`, data),
 };
 
 export default api;

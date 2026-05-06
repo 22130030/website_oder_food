@@ -57,11 +57,16 @@ public class SecurityConfig {
                         .requestMatchers(
                                 "/api/auth/**",
                                 "/error",
+                                "/ws-chat/**",
                                 "/uploads/**",
+                                "/api/categories/**",
                                 "/api/foods/**"
                         ).permitAll()
+                        .requestMatchers("/api/profile/**").hasRole("CUSTOMER")
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
+                        .requestMatchers("/api/chat/admin/**").hasRole("ADMIN")
                         .requestMatchers("/api/user/**").hasAnyRole("CUSTOMER", "ADMIN")
+                        .requestMatchers("/api/chat/**").hasAnyRole("CUSTOMER", "ADMIN")
                         .anyRequest().authenticated()
                 )
                 .authenticationProvider(authenticationProvider())

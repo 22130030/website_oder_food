@@ -1,8 +1,11 @@
-import React, { useState } from 'react';
+import React, {useEffect, useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useCart } from '../../context/CartContext';
 import './Navbar.css';
+import SockJS from 'sockjs-client';
+import { Client } from '@stomp/stompjs';
+import { chatAPI } from '../../services/api';
 
 const Navbar = () => {
   const { user, logout, isAuthenticated } = useAuth();
@@ -11,6 +14,51 @@ const Navbar = () => {
   const location = useLocation();
   const [menuOpen, setMenuOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [chatUnread, setChatUnread] = useState(0);
+  const customerId = user?.userId || user?.id;
+  useEffect(() => {
+  if (!customerId || user?.role !== 'CUSTOMER') return;
+
+  const loadCustomerUnread = () => {
+    chatAPI.getCustomerUnreadCount(customerId)
+      .then(res => setChatUnread(Number(res.data || 0)))
+      .catch(err => console.error('Lỗi lấy unread user:', err));
+  };
+
+  loadCustomerUnread();
+
+  const handleCustomerChatRead = () => {
+    setChatUnread(0);
+  };
+
+  window.addEventListener('customer-chat-read', handleCustomerChatRead);
+
+  const client = new Client({
+    webSocketFactory: () => new SockJS('http://localhost:8080/ws-chat'),
+    reconnectDelay: 5000,
+    onConnect: () => {
+      client.subscribe(`/topic/chat/${customerId}`, (message) => {
+        const newMessage = JSON.parse(message.body);
+
+        if (newMessage.senderId !== customerId) {
+          if (location.pathname === '/chat') {
+            chatAPI.markCustomerChatRead(customerId)
+              .then(() => setChatUnread(0));
+          } else {
+            setChatUnread(prev => prev + 1);
+          }
+        }
+      });
+    },
+  });
+
+  client.activate();
+
+  return () => {
+    client.deactivate();
+    window.removeEventListener('customer-chat-read', handleCustomerChatRead);
+  };
+}, [customerId, user?.role, location.pathname]);
 
   const handleLogout = () => { logout(); navigate('/login'); };
   const close = () => setMenuOpen(false);
@@ -31,7 +79,10 @@ const Navbar = () => {
           <Link to="/home"       className={isActive('/home')}       onClick={close}>Trang chủ</Link>
           <Link to="/menu"   className={isActive('/menu')}   onClick={close}>Thực đơn</Link>
           <Link to="/orders" className={isActive('/orders')} onClick={close}>Đơn hàng</Link>
-          <Link to="/chat"   className={isActive('/chat')}   onClick={close}>Hỗ trợ</Link>
+          <Link to="/chat" className="nav-link support-link">
+  Hỗ trợ
+  {chatUnread > 0 && <span className="chat-red-dot"></span>}
+</Link>
         </div>
 
         <div className="navbar-actions">

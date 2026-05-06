@@ -221,3 +221,50 @@
     padding: 16px;
   }
 }
+.chat-date-label {
+  width: fit-content;
+  margin: 14px auto;
+  padding: 6px 14px;
+  border-radius: 999px;
+  background: #b8b8b8;
+  color: white;
+  font-size: 13px;
+  font-weight: 600;
+}
+.image-upload-btn {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  border: none;
+  background: #f3f4f6;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  margin-right: 8px;
+  font-size: 20px;
+  flex-shrink: 0;
+}
+
+.chat-image {
+  max-width: 220px;
+  max-height: 220px;
+  border-radius: 12px;
+  display: block;
+  object-fit: cover;
+}
+
+.image-bubble {
+  padding: 6px !important;
+}
+
+.chat-date-label {
+  width: fit-content;
+  margin: 14px auto;
+  padding: 6px 14px;
+  border-radius: 999px;
+  background: #b8b8b8;
+  color: white;
+  font-size: 13px;
+  font-weight: 600;
+}
