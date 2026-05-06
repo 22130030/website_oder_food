@@ -94,7 +94,8 @@ export const profileAPI = {
       },
     }),
 
-  changePassword: (data) => api.put('/profile/change-password', data),
+  changePassword: (userId, data) =>
+    api.put(`/profile/${userId}/change-password`, data),
 };
 
 export default api;

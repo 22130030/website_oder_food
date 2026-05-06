@@ -1,10 +1,12 @@
 package com.nlufoodstack.foodstackbackend.controller.user;
 
 import com.nlufoodstack.foodstackbackend.dto.reponse.UserProfileResponse;
+import com.nlufoodstack.foodstackbackend.dto.request.ChangePasswordRequest;
 import com.nlufoodstack.foodstackbackend.dto.request.UpdateProfileRequest;
 import com.nlufoodstack.foodstackbackend.entity.User;
 import com.nlufoodstack.foodstackbackend.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -21,6 +23,7 @@ import java.nio.file.Paths;
 public class ProfileController {
 
     private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
 
     @GetMapping("/{userId}")
     public UserProfileResponse getProfile(@PathVariable Long userId) {
@@ -96,6 +99,40 @@ public class ProfileController {
         } catch (Exception e) {
             throw new RuntimeException("Upload avatar thất bại: " + e.getMessage());
         }
+    }
+    @PutMapping("/{userId}/change-password")
+    public Map<String, String> changePassword(
+            @PathVariable Long userId,
+            @RequestBody ChangePasswordRequest request
+    ) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy người dùng"));
+
+        if (request.getCurrentPassword() == null || request.getCurrentPassword().isBlank()) {
+            throw new RuntimeException("Vui lòng nhập mật khẩu hiện tại");
+        }
+
+        if (request.getNewPassword() == null || request.getNewPassword().isBlank()) {
+            throw new RuntimeException("Vui lòng nhập mật khẩu mới");
+        }
+
+        if (request.getNewPassword().length() < 6) {
+            throw new RuntimeException("Mật khẩu mới phải có ít nhất 6 ký tự");
+        }
+
+        boolean matches = passwordEncoder.matches(
+                request.getCurrentPassword(),
+                user.getPasswordHash()
+        );
+
+        if (!matches) {
+            throw new RuntimeException("Mật khẩu hiện tại không đúng");
+        }
+
+        user.setPasswordHash(passwordEncoder.encode(request.getNewPassword()));
+        userRepository.save(user);
+
+        return Map.of("message", "Đổi mật khẩu thành công");
     }
 
     private UserProfileResponse toResponse(User user) {

@@ -6,7 +6,7 @@ import { profileAPI } from '../../services/api';
 import './ProfilePage.css';
 
 const ProfilePage = () => {
-  const { user, login } = useAuth();
+  const { user, login, logout } = useAuth();
 
   const userId = user?.userId || user?.id;
 
@@ -194,6 +194,11 @@ const ProfilePage = () => {
   const handlePwSubmit = async (e) => {
     e.preventDefault();
 
+    if (!userId) {
+      showMsg('error', 'Không lấy được userId. Hãy đăng nhập lại!');
+      return;
+    }
+
     if (pwForm.newPassword !== pwForm.confirmPassword) {
       showMsg('error', 'Mật khẩu xác nhận không khớp!');
       return;
@@ -207,20 +212,32 @@ const ProfilePage = () => {
     try {
       setLoading(true);
 
-      await profileAPI.changePassword({
+      await profileAPI.changePassword(userId, {
         currentPassword: pwForm.currentPassword,
         newPassword: pwForm.newPassword,
       });
 
-      showMsg('success', 'Đổi mật khẩu thành công!');
+      showMsg('success', 'Đổi mật khẩu thành công! Vui lòng đăng nhập lại.');
 
       setPwForm({
         currentPassword: '',
         newPassword: '',
         confirmPassword: '',
       });
+
+      setTimeout(() => {
+        if (logout) {
+          logout();
+        } else {
+          localStorage.removeItem('token');
+          localStorage.removeItem('user');
+        }
+
+        window.location.href = '/login';
+      }, 1200);
     } catch (err) {
       console.error('Lỗi đổi mật khẩu:', err);
+
       showMsg(
         'error',
         err.response?.data?.message ||
