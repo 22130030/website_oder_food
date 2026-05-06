@@ -262,3 +262,70 @@
     height: 380px;
   }
 }
+/* ===== API detail additions ===== */
+.detail-original-price {
+  display: inline-block;
+  margin-left: 12px;
+  font-size: 18px;
+  color: #999;
+  text-decoration: line-through;
+  font-weight: 600;
+}
+
+.detail-total {
+  background: #fff7ed;
+  border-radius: 12px;
+  padding: 14px 16px;
+  margin-bottom: 18px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-weight: 700;
+  color: #444;
+}
+
+.detail-total strong {
+  color: var(--primary);
+  font-size: 18px;
+}
+
+.add-success-message {
+  background: #ecfdf5;
+  color: #047857;
+  padding: 12px 14px;
+  border-radius: 12px;
+  margin-bottom: 16px;
+  font-weight: 700;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 70px 20px;
+  background: white;
+  border-radius: 16px;
+  color: #666;
+}
+
+.empty-state .icon {
+  font-size: 54px;
+  margin-bottom: 14px;
+}
+.empty-state {
+  text-align: center;
+  padding: 70px 20px;
+  color: #666;
+  background: white;
+  border-radius: 18px;
+  box-shadow: var(--shadow);
+}
+
+.empty-state .icon {
+  font-size: 56px;
+  margin-bottom: 14px;
+}
+
+.empty-state h3 {
+  color: #222;
+  font-size: 22px;
+  margin-bottom: 8px;
+}

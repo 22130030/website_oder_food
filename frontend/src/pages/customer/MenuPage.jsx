@@ -1,62 +1,120 @@
-import React, { useState, useEffect } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Navbar from '../../components/common/Navbar';
 import Footer from '../../components/common/Footer';
-import FoodCard from '../../components/customer/FoodCard';
+import { foodAPI } from '../../services/api';
 import './MenuPage.css';
 
-const MOCK_FOODS = [
-  { id: 1, name: 'Phở Bò Đặc Biệt', price: 75000, category: 'Món chính', rating: 5, reviewCount: 128, available: true, description: 'Phở bò tươi ngon với nước dùng hầm 12 tiếng', imageUrl: 'https://via.placeholder.com/300x200?text=Pho+Bo' },
-  { id: 2, name: 'Cơm Tấm Sườn Nướng', price: 65000, category: 'Món chính', rating: 4, reviewCount: 95, available: true, description: 'Cơm tấm sườn nướng thơm lừng kèm bì chả', imageUrl: 'https://via.placeholder.com/300x200?text=Com+Tam' },
-  { id: 3, name: 'Bún Bò Huế', price: 70000, category: 'Món chính', rating: 4, reviewCount: 74, available: true, description: 'Bún bò Huế cay nồng đậm đà', imageUrl: 'https://via.placeholder.com/300x200?text=Bun+Bo' },
-  { id: 4, name: 'Trà Sữa Trân Châu', price: 35000, category: 'Đồ uống', rating: 4, reviewCount: 203, available: true, description: 'Trà sữa thơm ngon với trân châu dai mịn', imageUrl: 'https://via.placeholder.com/300x200?text=Tra+Sua' },
-  { id: 5, name: 'Bánh Mì Thịt Nướng', price: 25000, category: 'Ăn nhẹ', rating: 4, reviewCount: 156, available: true, description: 'Bánh mì giòn rụm với nhân thịt nướng', imageUrl: 'https://via.placeholder.com/300x200?text=Banh+Mi' },
-  { id: 6, name: 'Lẩu Thái Hải Sản', price: 280000, category: 'Lẩu', rating: 5, reviewCount: 67, available: true, description: 'Lẩu Thái cay nồng với hải sản tươi sống', imageUrl: 'https://via.placeholder.com/300x200?text=Lau+Thai' },
-  { id: 7, name: 'Pizza Hải Sản', price: 185000, category: 'Pizza', rating: 4, reviewCount: 89, available: true, description: 'Pizza đế mỏng với topping hải sản phong phú', imageUrl: 'https://via.placeholder.com/300x200?text=Pizza' },
-  { id: 8, name: 'Nước Cam Vắt', price: 25000, category: 'Đồ uống', rating: 5, reviewCount: 112, available: false, description: 'Nước cam tươi vắt 100% nguyên chất', imageUrl: 'https://via.placeholder.com/300x200?text=Cam+Vat' },
-];
-
-const CATEGORIES = ['Tất cả', 'Món chính', 'Đồ uống', 'Ăn nhẹ', 'Lẩu', 'Pizza', 'Tráng miệng'];
-
-const SORT_OPTIONS = [
-  { value: 'default', label: 'Mặc định' },
-  { value: 'price-asc', label: 'Giá tăng dần' },
-  { value: 'price-desc', label: 'Giá giảm dần' },
-  { value: 'rating', label: 'Đánh giá cao nhất' },
-  { value: 'popular', label: 'Phổ biến nhất' },
-];
-
 const MenuPage = () => {
-  const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
+
   const [foods, setFoods] = useState([]);
-  const [search, setSearch] = useState(searchParams.get('search') || '');
-  const [activeCategory, setActiveCategory] = useState(searchParams.get('category') || 'Tất cả');
+  const [categories, setCategories] = useState([]);
+
+  const [keyword, setKeyword] = useState('');
+  const [selectedCategoryId, setSelectedCategoryId] = useState('');
+  const [priceRange, setPriceRange] = useState('');
   const [sort, setSort] = useState('default');
-  const [showAvailable, setShowAvailable] = useState(false);
+  const [onlyAvailable, setOnlyAvailable] = useState(true);
+
+  const [loading, setLoading] = useState(false);
+
+  const normalizeCategory = (category) => ({
+    id: category.id ?? category.categoryId,
+    name: category.name ?? category.categoryName,
+  });
+
+  const getPriceParams = () => {
+    switch (priceRange) {
+      case 'under30000':
+        return { maxPrice: 30000 };
+      case '30000-50000':
+        return { minPrice: 30000, maxPrice: 50000 };
+      case '50000-100000':
+        return { minPrice: 50000, maxPrice: 100000 };
+      case 'over100000':
+        return { minPrice: 100000 };
+      default:
+        return {};
+    }
+  };
+
+  const getImageSrc = (imageUrl) => {
+    if (!imageUrl) return '/placeholder-food.png';
+    if (imageUrl.startsWith('http')) return imageUrl;
+    return `http://localhost:8080${imageUrl}`;
+  };
+
+  const loadCategories = async () => {
+    try {
+      const res = await foodAPI.getCategories();
+
+      const data = Array.isArray(res.data) ? res.data : [];
+
+      const normalized = data
+        .map(normalizeCategory)
+        .filter(category => category.id && category.name);
+
+      setCategories(normalized);
+    } catch (err) {
+      console.error('Lỗi load danh mục:', err);
+      setCategories([]);
+    }
+  };
+
+  const loadFoods = async () => {
+    setLoading(true);
+
+    try {
+      const priceParams = getPriceParams();
+
+      const params = {
+        keyword: keyword.trim(),
+        categoryId: selectedCategoryId || null,
+        sort,
+        available: onlyAvailable ? true : null,
+        ...priceParams,
+      };
+
+      const res = await foodAPI.getFoods(params);
+
+      const data = Array.isArray(res.data) ? res.data : [];
+      setFoods(data);
+    } catch (err) {
+      console.error('Lỗi load món ăn:', err);
+      setFoods([]);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    let filtered = [...MOCK_FOODS];
+    loadCategories();
+    loadFoods();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
-    if (search) {
-      filtered = filtered.filter(f => f.name.toLowerCase().includes(search.toLowerCase()));
-    }
-    if (activeCategory !== 'Tất cả') {
-      filtered = filtered.filter(f => f.category === activeCategory);
-    }
-    if (showAvailable) {
-      filtered = filtered.filter(f => f.available);
-    }
+  useEffect(() => {
+    loadFoods();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedCategoryId, priceRange, sort, onlyAvailable]);
 
-    switch (sort) {
-      case 'price-asc': filtered.sort((a, b) => a.price - b.price); break;
-      case 'price-desc': filtered.sort((a, b) => b.price - a.price); break;
-      case 'rating': filtered.sort((a, b) => b.rating - a.rating); break;
-      case 'popular': filtered.sort((a, b) => b.reviewCount - a.reviewCount); break;
-      default: break;
-    }
+  const handleSearch = (e) => {
+    e.preventDefault();
+    loadFoods();
+  };
 
-    setFoods(filtered);
-  }, [search, activeCategory, sort, showAvailable]);
+  const handleResetFilter = () => {
+    setKeyword('');
+    setSelectedCategoryId('');
+    setPriceRange('');
+    setSort('default');
+    setOnlyAvailable(true);
+
+    setTimeout(() => {
+      loadFoods();
+    }, 0);
+  };
 
   return (
     <div className="page-wrapper">
@@ -65,79 +123,210 @@ const MenuPage = () => {
       <div className="menu-page">
         <div className="inner">
           <div className="menu-header">
-            <h1>🍽️ Thực đơn</h1>
-            <p>Khám phá hơn {MOCK_FOODS.length} món ăn ngon mỗi ngày</p>
+            <h1>🍔 Thực đơn</h1>
+            <p>Khám phá các món ăn ngon tại NLU-FoodStack</p>
           </div>
 
           <div className="menu-layout">
-            {/* Sidebar lọc */}
-            <div className="menu-sidebar">
-              <div className="filter-card card">
+            <aside className="menu-sidebar">
+              <div className="filter-card">
                 <h3>🔍 Tìm kiếm</h3>
-                <input 
-                  type="text" 
-                  placeholder="Tên món ăn..." 
-                  value={search} 
-                  onChange={e => setSearch(e.target.value)} 
-                />
+
+                <form onSubmit={handleSearch}>
+                  <input
+                    type="text"
+                    placeholder="Tên món ăn..."
+                    value={keyword}
+                    onChange={(e) => setKeyword(e.target.value)}
+                    style={{
+                      width: '100%',
+                      height: 48,
+                      border: '1px solid #e5e7eb',
+                      borderRadius: 14,
+                      padding: '0 14px',
+                      marginBottom: 14,
+                      outline: 'none',
+                    }}
+                  />
+
+                  <button type="submit" className="btn btn-primary btn-full">
+                    Tìm kiếm
+                  </button>
+                </form>
               </div>
 
-              <div className="filter-card card">
-                <h3>📂 Danh mục</h3>
-                {CATEGORIES.map(cat => (
-                  <button 
-                    key={cat} 
-                    className={`cat-filter-btn ${activeCategory === cat ? 'active' : ''}`}
-                    onClick={() => setActiveCategory(cat)}
+              <div className="filter-card">
+                <h3>📁 Danh mục</h3>
+
+                <button
+                  type="button"
+                  className={`cat-filter-btn ${selectedCategoryId === '' ? 'active' : ''}`}
+                  onClick={() => setSelectedCategoryId('')}
+                >
+                  Tất cả
+                </button>
+
+                {categories.map(category => (
+                  <button
+                    type="button"
+                    key={category.id}
+                    className={`cat-filter-btn ${
+                      String(selectedCategoryId) === String(category.id) ? 'active' : ''
+                    }`}
+                    onClick={() => setSelectedCategoryId(category.id)}
                   >
-                    {cat}
+                    {category.name}
                   </button>
                 ))}
               </div>
 
-              <div className="filter-card card">
-                <h3>⚙️ Lọc khác</h3>
-                <label className="checkbox-label">
-                  <input 
-                    type="checkbox" 
-                    checked={showAvailable} 
-                    onChange={e => setShowAvailable(e.target.checked)} 
-                  />
-                  Chỉ hiện món còn hàng
-                </label>
-              </div>
-            </div>
+              <div className="filter-card">
+                <h3>💰 Khoảng giá</h3>
 
-            {/* Nội dung chính */}
-            <div className="menu-main">
+                <select
+                  value={priceRange}
+                  onChange={(e) => setPriceRange(e.target.value)}
+                  style={{
+                    width: '100%',
+                    height: 48,
+                    border: '1px solid #e5e7eb',
+                    borderRadius: 14,
+                    padding: '0 14px',
+                    outline: 'none',
+                    background: 'white',
+                  }}
+                >
+                  <option value="">Tất cả mức giá</option>
+                  <option value="under30000">Dưới 30.000đ</option>
+                  <option value="30000-50000">30.000đ - 50.000đ</option>
+                  <option value="50000-100000">50.000đ - 100.000đ</option>
+                  <option value="over100000">Trên 100.000đ</option>
+                </select>
+              </div>
+
+              <div className="filter-card">
+                <h3>⚙️ Lọc khác</h3>
+
+                <label
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 10,
+                    marginBottom: 18,
+                    cursor: 'pointer',
+                  }}
+                >
+                  <input
+                    type="checkbox"
+                    checked={onlyAvailable}
+                    onChange={(e) => setOnlyAvailable(e.target.checked)}
+                  />
+                  <span>Chỉ hiện món còn hàng</span>
+                </label>
+
+                <button
+                  type="button"
+                  className="btn btn-secondary btn-full"
+                  onClick={handleResetFilter}
+                >
+                  Làm mới bộ lọc
+                </button>
+              </div>
+            </aside>
+
+            <main className="menu-main">
               <div className="menu-toolbar">
-                <span className="result-count">
+                <div className="result-count">
                   Tìm thấy <strong>{foods.length}</strong> món ăn
-                </span>
+                </div>
+
                 <div className="sort-select">
-                  <label>Sắp xếp: </label>
-                  <select value={sort} onChange={e => setSort(e.target.value)}>
-                    {SORT_OPTIONS.map(o => (
-                      <option key={o.value} value={o.value}>{o.label}</option>
-                    ))}
+                  <span>Sắp xếp:</span>
+                  <select value={sort} onChange={(e) => setSort(e.target.value)}>
+                    <option value="default">Mới nhất</option>
+                    <option value="priceAsc">Giá tăng dần</option>
+                    <option value="priceDesc">Giá giảm dần</option>
+                    <option value="nameAsc">Tên A-Z</option>
+                    <option value="soldDesc">Bán chạy</option>
+                    <option value="ratingDesc">Đánh giá cao</option>
                   </select>
                 </div>
               </div>
 
-              {foods.length === 0 ? (
+              {loading ? (
                 <div className="empty-state">
-                  <div className="icon">🔍</div>
-                  <h3>Không tìm thấy món nào!</h3>
-                  <p>Hãy thử thay đổi từ khóa hoặc danh mục.</p>
+                  <div className="icon">⏳</div>
+                  <h3>Đang tải món ăn...</h3>
+                </div>
+              ) : foods.length === 0 ? (
+                <div className="empty-state">
+                  <div className="icon">🍽️</div>
+                  <h3>Không tìm thấy món ăn phù hợp</h3>
+                  <p>Thử thay đổi từ khóa hoặc bộ lọc khác.</p>
                 </div>
               ) : (
                 <div className="foods-grid">
-                  {foods.map(food => (
-                    <FoodCard key={food.id} food={food} />
-                  ))}
+                  {foods.map(food => {
+                    const price = Number(food.price || 0);
+                    const discountPrice = food.discountPrice ? Number(food.discountPrice) : null;
+
+                    return (
+                      <div className="food-card card" key={food.id}>
+                        <div className="food-img-wrap">
+                          <img
+                            src={getImageSrc(food.imageUrl)}
+                            alt={food.name}
+                            className="food-img"
+                          />
+
+                          {food.isAvailable === false && (
+                            <span className="sold-out-badge">Tạm hết</span>
+                          )}
+                        </div>
+
+                        <div className="food-card-body">
+                          <div className="food-card-category">
+                            {food.categoryName || food.category?.name || 'Món ăn'}
+                          </div>
+
+                          <h3>{food.name}</h3>
+
+                          <p className="food-card-desc">
+                            {food.description || 'Món ăn ngon tại NLU-FoodStack'}
+                          </p>
+
+                          <div className="food-card-meta">
+                            <span>⭐ {food.avgRating || '4.8'}</span>
+                            <span>🔥 Đã bán {food.totalSold || 0}</span>
+                          </div>
+
+                          <div className="food-card-bottom">
+                            <div className="food-price-box">
+                              {discountPrice ? (
+                                <>
+                                  <strong>{discountPrice.toLocaleString('vi-VN')}đ</strong>
+                                  <span>{price.toLocaleString('vi-VN')}đ</span>
+                                </>
+                              ) : (
+                                <strong>{price.toLocaleString('vi-VN')}đ</strong>
+                              )}
+                            </div>
+
+                            <button
+                              type="button"
+                              className="btn btn-primary"
+                              onClick={() => navigate(`/foods/${food.id}`)}
+                            >
+                              Chi tiết
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
               )}
-            </div>
+            </main>
           </div>
         </div>
       </div>

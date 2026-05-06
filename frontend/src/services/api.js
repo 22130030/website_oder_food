@@ -25,6 +25,12 @@ export const authAPI = {
   googleLogin: (idToken) => api.post('/auth/google', { idToken })
 };
 
+export const foodAPI = {
+  getFoods: (params = {}) => api.get('/foods', { params }),
+  getFoodById: (id) => api.get(`/foods/${id}`),
+  getCategories: () => api.get('/categories'),
+};
+
 export const adminFoodAPI = {
   getFoods: () => api.get('/admin/foods'),
   getCategories: () => api.get('/admin/categories'),
@@ -75,6 +81,20 @@ export const chatAPI = {
         'Content-Type': 'multipart/form-data',
       },
     }),
+};
+export const profileAPI = {
+  getProfile: (userId) => api.get(`/profile/${userId}`),
+
+  updateProfile: (userId, data) => api.put(`/profile/${userId}`, data),
+
+  uploadAvatar: (formData) =>
+    api.post('/profile/upload-avatar', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    }),
+
+  changePassword: (data) => api.put('/profile/change-password', data),
 };
 
 export default api;
