@@ -1,6 +1,5 @@
-import React, { createContext, useContext, useMemo, useState } from 'react';
-
-// ==================== CART CONTEXT ====================
+import React, { createContext, useContext, useEffect, useMemo, useState, useCallback } from 'react';
+import axios from 'axios';
 
 const CartContext = createContext();
 
@@ -12,30 +11,76 @@ export const useCart = () => {
   return context;
 };
 
-// ==================== CART PROVIDER ====================
-
 export const CartProvider = ({ children }) => {
   const [cartItems, setCartItems] = useState([]);
 
-  // ==================== ADD TO CART ====================
+  const getUserId = () => {
+    const userRaw = localStorage.getItem('user');
+    if (!userRaw) return null;
 
-  const addToCart = (food) => {
-    setCartItems((prev) => {
-      const existed = prev.find((item) => item.id === food.id);
-
-      if (existed) {
-        return prev.map((item) =>
-          item.id === food.id
-            ? { ...item, quantity: item.quantity + 1 }
-            : item
-        );
-      }
-
-      return [...prev, { ...food, quantity: 1 }];
-    });
+    const user = JSON.parse(userRaw);
+    return user.id || user.userId || user.accountId;
   };
 
-  // ==================== UPDATE QUANTITY ====================
+  const normalizeCartItem = (item) => {
+    const food = item.foodItem || item.food || item;
+
+    return {
+      id: food.id || item.foodItemId,
+      foodItemId: food.id || item.foodItemId,
+      name: food.name,
+      price: food.discountPrice || food.price || 0,
+      imageUrl: food.imageUrl,
+      description: food.description,
+      quantity: item.quantity || 1,
+      note: item.note || '',
+    };
+  };
+
+  const loadCartFromDatabase = useCallback(async () => {
+    const userId = getUserId();
+    if (!userId) return;
+
+    try {
+      const res = await axios.get(`http://localhost:8080/api/cart?userId=${userId}`);
+
+      const data = Array.isArray(res.data) ? res.data : [];
+      setCartItems(data.map(normalizeCartItem));
+    } catch (error) {
+      console.error('Lỗi load giỏ hàng từ database:', error);
+    }
+  }, []);
+
+  useEffect(() => {
+    loadCartFromDatabase();
+  }, [loadCartFromDatabase]);
+
+  const addToCart = async (food, quantity = 1) => {
+    const userId = getUserId();
+
+    if (!userId) {
+      alert('Vui lòng đăng nhập để thêm vào giỏ hàng');
+      return;
+    }
+
+    try {
+      await axios.post(
+        `http://localhost:8080/api/cart/add?userId=${userId}`,
+        {
+          foodItemId: food.id || food.foodItemId,
+          quantity,
+          note: '',
+        }
+      );
+
+      await loadCartFromDatabase();
+
+      alert('Đã thêm vào giỏ hàng');
+    } catch (error) {
+      console.error('Lỗi thêm giỏ hàng:', error);
+      alert('Không thể thêm vào giỏ hàng');
+    }
+  };
 
   const updateQuantity = (foodId, newQuantity) => {
     if (newQuantity <= 0) {
@@ -45,14 +90,10 @@ export const CartProvider = ({ children }) => {
 
     setCartItems((prev) =>
       prev.map((item) =>
-        item.id === foodId
-          ? { ...item, quantity: newQuantity }
-          : item
+        item.id === foodId ? { ...item, quantity: newQuantity } : item
       )
     );
   };
-
-  // ==================== DECREASE ITEM ====================
 
   const decreaseItem = (foodId) => {
     setCartItems((prev) =>
@@ -66,19 +107,31 @@ export const CartProvider = ({ children }) => {
     );
   };
 
-  // ==================== REMOVE FROM CART ====================
+  const removeFromCart = async (foodId) => {
+  const userId = getUserId();
 
-  const removeFromCart = (foodId) => {
+  if (!userId) {
+    alert('Vui lòng đăng nhập');
+    return;
+  }
+
+  try {
+    await axios.delete(
+      `http://localhost:8080/api/cart/${foodId}?userId=${userId}`
+    );
+
     setCartItems((prev) => prev.filter((item) => item.id !== foodId));
-  };
 
-  // ==================== CLEAR CART ====================
+    alert('Đã xóa món khỏi giỏ hàng');
+  } catch (error) {
+    console.error('Lỗi xóa món khỏi giỏ:', error);
+    alert('Không thể xóa món khỏi giỏ hàng');
+  }
+};
 
   const clearCart = () => {
     setCartItems([]);
   };
-
-  // ==================== CALCULATED VALUES ====================
 
   const totalQuantity = useMemo(() => {
     return cartItems.reduce((sum, item) => sum + item.quantity, 0);
@@ -90,12 +143,10 @@ export const CartProvider = ({ children }) => {
 
   const totalPrice = useMemo(() => {
     return cartItems.reduce(
-      (sum, item) => sum + item.price * item.quantity,
+      (sum, item) => sum + Number(item.price || 0) * item.quantity,
       0
     );
   }, [cartItems]);
-
-  // ==================== CONTEXT VALUE ====================
 
   const value = {
     cartItems,
@@ -104,6 +155,7 @@ export const CartProvider = ({ children }) => {
     decreaseItem,
     removeFromCart,
     clearCart,
+    loadCartFromDatabase,
     totalQuantity,
     totalItems,
     totalPrice,

@@ -2,11 +2,13 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Navbar from '../../components/common/Navbar';
 import Footer from '../../components/common/Footer';
+import { useCart } from '../../context/CartContext';
 import { foodAPI } from '../../services/api';
 import './MenuPage.css';
 
 const MenuPage = () => {
   const navigate = useNavigate();
+  const { addToCart } = useCart();
 
   const [foods, setFoods] = useState([]);
   const [categories, setCategories] = useState([]);
@@ -170,9 +172,8 @@ const MenuPage = () => {
                   <button
                     type="button"
                     key={category.id}
-                    className={`cat-filter-btn ${
-                      String(selectedCategoryId) === String(category.id) ? 'active' : ''
-                    }`}
+                    className={`cat-filter-btn ${String(selectedCategoryId) === String(category.id) ? 'active' : ''
+                      }`}
                     onClick={() => setSelectedCategoryId(category.id)}
                   >
                     {category.name}
@@ -312,13 +313,23 @@ const MenuPage = () => {
                               )}
                             </div>
 
-                            <button
-                              type="button"
-                              className="btn btn-primary"
-                              onClick={() => navigate(`/foods/${food.id}`)}
-                            >
-                              Chi tiết
-                            </button>
+                            <div style={{ display: 'flex', gap: '10px' }}>
+                              <button
+                                type="button"
+                                className="btn btn-secondary"
+                                onClick={() => addToCart(food)}
+                              >
+                                Thêm giỏ
+                              </button>
+
+                              <button
+                                type="button"
+                                className="btn btn-primary"
+                                onClick={() => navigate(`/foods/${food.id}`)}
+                              >
+                                Chi tiết
+                              </button>
+                            </div>
                           </div>
                         </div>
                       </div>
