@@ -26,8 +26,11 @@ const FoodCard = ({ food }) => {
 
   // ==================== RENDER ====================
 
+  const available = food.available ?? food.isAvailable ?? true;
+  const price = Number(food.price || food.priceV2 || 0);
+
   return (
-    <Link to={`/food/${food.id}`} className="food-card">
+    <Link to={`/foods/${food.id}`} className="food-card">
       {/* ========== CARD IMAGE ========== */}
       <div className="food-card-image">
         <img
@@ -37,8 +40,8 @@ const FoodCard = ({ food }) => {
           }
           alt={food.name}
         />
-        {!food.available && <div className="sold-out-badge">Hết món</div>}
-        <span className="category-tag">{food.category}</span>
+        {!available && <div className="sold-out-badge">Hết món</div>}
+        <span className="category-tag">{food.categoryName || food.category || (food.category?.name) || 'Món ăn'}</span>
       </div>
 
       {/* ========== CARD BODY ========== */}
@@ -53,16 +56,12 @@ const FoodCard = ({ food }) => {
 
         {/* ========== CARD FOOTER ========== */}
         <div className="food-card-footer">
-          <span className="food-price">
-            {food.price.toLocaleString('vi-VN')}đ
-          </span>
+          <span className="food-price">{price.toLocaleString('vi-VN')}đ</span>
           <button
-            className={`btn btn-primary btn-sm add-cart-btn ${
-              isAdded ? 'added' : ''
-            }`}
+            className={`btn btn-primary btn-sm add-cart-btn ${isAdded ? 'added' : ''}`}
             onClick={handleAddToCart}
-            disabled={!food.available}
-            title={food.available ? 'Thêm vào giỏ hàng' : 'Món này đã hết'}
+            disabled={!available}
+            title={available ? 'Thêm vào giỏ hàng' : 'Món này đã hết'}
           >
             {isAdded ? '✓ Thêm rồi' : '🛒 Thêm'}
           </button>

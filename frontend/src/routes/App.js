@@ -5,6 +5,7 @@ import 'react-toastify/dist/ReactToastify.css';
 import HomePage from '../pages/customer/HomePage';
 import { AuthProvider } from '../context/AuthContext';
 import { CartProvider } from '../context/CartContext';
+import ScrollToTop from '../components/common/ScrollToTop';
 import FoodDetailPage from '../pages/customer/FoodDetailPage';
 import LoginPage from '../pages/auth/LoginPage';
 import RegisterPage from '../pages/auth/RegisterPage';
@@ -28,6 +29,7 @@ function App() {
     <Router>
       <AuthProvider>
         <CartProvider>
+            <ScrollToTop />
           <Routes>
             <Route path="/" element={<LoginPage />} />
             <Route path="/login" element={<LoginPage />} />
