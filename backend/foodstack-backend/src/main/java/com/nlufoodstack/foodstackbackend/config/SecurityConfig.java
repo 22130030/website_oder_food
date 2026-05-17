@@ -60,7 +60,8 @@ public class SecurityConfig {
                                 "/ws-chat/**",
                                 "/uploads/**",
                                 "/api/categories/**",
-                                "/api/foods/**"
+                                "/api/foods/**",
+                                "/api/cart/**"
                         ).permitAll()
                         .requestMatchers("/api/profile/**").hasRole("CUSTOMER")
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")

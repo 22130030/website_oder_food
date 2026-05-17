@@ -2,11 +2,13 @@ import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import Navbar from '../../components/common/Navbar';
 import Footer from '../../components/common/Footer';
+import { useCart } from '../../context/CartContext';
 import { foodAPI } from '../../services/api';
 import './HomePage.css';
 
 const HomePage = () => {
   const navigate = useNavigate();
+  const { addToCart } = useCart();
 
   const [categories, setCategories] = useState([]);
   const [featuredFoods, setFeaturedFoods] = useState([]);
@@ -103,6 +105,7 @@ const HomePage = () => {
                   value={keyword}
                   onChange={(e) => setKeyword(e.target.value)}
                 />
+
                 <button type="submit" className="btn btn-primary">
                   Tìm kiếm
                 </button>
@@ -137,6 +140,7 @@ const HomePage = () => {
         <div className="home-inner">
           <div className="section-header">
             <h2>📁 Danh mục món ăn</h2>
+
             <Link to="/menu" className="see-all">
               Xem tất cả
             </Link>
@@ -168,6 +172,7 @@ const HomePage = () => {
         <div className="home-inner">
           <div className="section-header">
             <h2>🔥 Món ăn nổi bật</h2>
+
             <Link to="/menu" className="see-all">
               Xem tất cả
             </Link>
@@ -181,7 +186,9 @@ const HomePage = () => {
             <div className="foods-featured">
               {featuredFoods.map(food => {
                 const price = Number(food.price || 0);
-                const discountPrice = food.discountPrice ? Number(food.discountPrice) : null;
+                const discountPrice = food.discountPrice
+                  ? Number(food.discountPrice)
+                  : null;
 
                 return (
                   <div className="home-food-card" key={food.id}>
@@ -213,7 +220,9 @@ const HomePage = () => {
                         <div className="home-price-box">
                           {discountPrice ? (
                             <>
-                              <strong>{discountPrice.toLocaleString('vi-VN')}đ</strong>
+                              <strong>
+                                {discountPrice.toLocaleString('vi-VN')}đ
+                              </strong>
                               <span>{price.toLocaleString('vi-VN')}đ</span>
                             </>
                           ) : (
@@ -221,13 +230,23 @@ const HomePage = () => {
                           )}
                         </div>
 
-                        <button
-                          type="button"
-                          className="btn btn-primary"
-                          onClick={() => navigate(`/foods/${food.id}`)}
-                        >
-                          Chi tiết
-                        </button>
+                        <div style={{ display: 'flex', gap: '10px' }}>
+                          <button
+                            type="button"
+                            className="btn btn-secondary"
+                            onClick={() => addToCart(food)}
+                          >
+                            Thêm giỏ
+                          </button>
+
+                          <button
+                            type="button"
+                            className="btn btn-primary"
+                            onClick={() => navigate(`/foods/${food.id}`)}
+                          >
+                            Chi tiết
+                          </button>
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -247,6 +266,7 @@ const HomePage = () => {
             <Link to="/menu" className="btn btn-primary">
               Xem thực đơn
             </Link>
+
             <Link to="/chat" className="btn btn-secondary">
               Liên hệ hỗ trợ
             </Link>
