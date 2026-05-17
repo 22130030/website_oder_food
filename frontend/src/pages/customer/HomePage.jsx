@@ -1,10 +1,11 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import Navbar from '../../components/common/Navbar';
 import Footer from '../../components/common/Footer';
 import { useCart } from '../../context/CartContext';
 import { foodAPI } from '../../services/api';
 import './HomePage.css';
+import FoodCard from '../../components/customer/FoodCard';
 
 const HomePage = () => {
   const navigate = useNavigate();
@@ -25,7 +26,7 @@ const HomePage = () => {
     return `http://localhost:8080${imageUrl}`;
   };
 
-  const loadCategories = async () => {
+  const loadCategories = useCallback(async () => {
     try {
       const res = await foodAPI.getCategories();
 
@@ -41,9 +42,9 @@ const HomePage = () => {
       console.error('Lỗi load danh mục home:', err);
       setCategories([]);
     }
-  };
+  }, []);
 
-  const loadFeaturedFoods = async () => {
+  const loadFeaturedFoods = useCallback(async () => {
     try {
       const res = await foodAPI.getFoods({
         available: true,
@@ -57,12 +58,11 @@ const HomePage = () => {
       console.error('Lỗi load món nổi bật:', err);
       setFeaturedFoods([]);
     }
-  };
-
+  }, []);
   useEffect(() => {
     loadCategories();
     loadFeaturedFoods();
-  }, []);
+  }, [loadCategories, loadFeaturedFoods]);
 
   const handleSearch = (e) => {
     e.preventDefault();
@@ -179,78 +179,23 @@ const HomePage = () => {
           </div>
 
           {featuredFoods.length === 0 ? (
-            <div className="home-empty-card">
-              Chưa có món ăn nổi bật.
-            </div>
+            <div className="home-empty-card">Chưa có món ăn nổi bật.</div>
           ) : (
             <div className="foods-featured">
-              {featuredFoods.map(food => {
-                const price = Number(food.price || 0);
-                const discountPrice = food.discountPrice
-                  ? Number(food.discountPrice)
-                  : null;
+              {featuredFoods.map((food) => {
+                const mapped = {
+                  id: food.id,
+                  name: food.name,
+                  description: food.description,
+                  imageUrl: food.imageUrl,
+                  available: food.isAvailable ?? food.available,
+                  categoryName: food.categoryName ?? (food.category && food.category.name) ?? food.category,
+                  price: food.discountPrice ? food.discountPrice : food.price,
+                  rating: food.avgRating ?? food.rating,
+                  reviewCount: food.totalReviews ?? 0,
+                };
 
-                return (
-                  <div className="home-food-card" key={food.id}>
-                    <div className="home-food-img-wrap">
-                      <img
-                        src={getImageSrc(food.imageUrl)}
-                        alt={food.name}
-                        className="home-food-img"
-                      />
-                    </div>
-
-                    <div className="home-food-content">
-                      <span className="home-food-category">
-                        {food.categoryName || food.category?.name || 'Món ăn'}
-                      </span>
-
-                      <h3>{food.name}</h3>
-
-                      <p>
-                        {food.description || 'Món ăn ngon tại NLU-FoodStack'}
-                      </p>
-
-                      <div className="home-food-meta">
-                        <span>⭐ {food.avgRating || '4.8'}</span>
-                        <span>🔥 {food.totalSold || 0}</span>
-                      </div>
-
-                      <div className="home-food-bottom">
-                        <div className="home-price-box">
-                          {discountPrice ? (
-                            <>
-                              <strong>
-                                {discountPrice.toLocaleString('vi-VN')}đ
-                              </strong>
-                              <span>{price.toLocaleString('vi-VN')}đ</span>
-                            </>
-                          ) : (
-                            <strong>{price.toLocaleString('vi-VN')}đ</strong>
-                          )}
-                        </div>
-
-                        <div style={{ display: 'flex', gap: '10px' }}>
-                          <button
-                            type="button"
-                            className="btn btn-secondary"
-                            onClick={() => addToCart(food)}
-                          >
-                            Thêm giỏ
-                          </button>
-
-                          <button
-                            type="button"
-                            className="btn btn-primary"
-                            onClick={() => navigate(`/foods/${food.id}`)}
-                          >
-                            Chi tiết
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                );
+                return <FoodCard key={food.id} food={mapped} />;
               })}
             </div>
           )}

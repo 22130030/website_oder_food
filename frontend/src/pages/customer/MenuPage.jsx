@@ -4,6 +4,7 @@ import Navbar from '../../components/common/Navbar';
 import Footer from '../../components/common/Footer';
 import { useCart } from '../../context/CartContext';
 import { foodAPI } from '../../services/api';
+import FoodCard from '../../components/customer/FoodCard';
 import './MenuPage.css';
 
 const MenuPage = () => {
@@ -267,73 +268,21 @@ const MenuPage = () => {
                 </div>
               ) : (
                 <div className="foods-grid">
-                  {foods.map(food => {
-                    const price = Number(food.price || 0);
-                    const discountPrice = food.discountPrice ? Number(food.discountPrice) : null;
+                  {foods.map((food) => {
+                    // normalize keys to what FoodCard expects
+                    const mapped = {
+                      id: food.id,
+                      name: food.name,
+                      description: food.description,
+                      imageUrl: food.imageUrl,
+                      available: food.isAvailable ?? food.available,
+                      categoryName: food.categoryName ?? (food.category && food.category.name) ?? food.category,
+                      price: food.discountPrice ? food.discountPrice : food.price,
+                      rating: food.avgRating ?? food.rating,
+                      reviewCount: food.totalReviews ?? 0,
+                    };
 
-                    return (
-                      <div className="food-card card" key={food.id}>
-                        <div className="food-img-wrap">
-                          <img
-                            src={getImageSrc(food.imageUrl)}
-                            alt={food.name}
-                            className="food-img"
-                          />
-
-                          {food.isAvailable === false && (
-                            <span className="sold-out-badge">Tạm hết</span>
-                          )}
-                        </div>
-
-                        <div className="food-card-body">
-                          <div className="food-card-category">
-                            {food.categoryName || food.category?.name || 'Món ăn'}
-                          </div>
-
-                          <h3>{food.name}</h3>
-
-                          <p className="food-card-desc">
-                            {food.description || 'Món ăn ngon tại NLU-FoodStack'}
-                          </p>
-
-                          <div className="food-card-meta">
-                            <span>⭐ {food.avgRating || '4.8'}</span>
-                            <span>🔥 Đã bán {food.totalSold || 0}</span>
-                          </div>
-
-                          <div className="food-card-bottom">
-                            <div className="food-price-box">
-                              {discountPrice ? (
-                                <>
-                                  <strong>{discountPrice.toLocaleString('vi-VN')}đ</strong>
-                                  <span>{price.toLocaleString('vi-VN')}đ</span>
-                                </>
-                              ) : (
-                                <strong>{price.toLocaleString('vi-VN')}đ</strong>
-                              )}
-                            </div>
-
-                            <div style={{ display: 'flex', gap: '10px' }}>
-                              <button
-                                type="button"
-                                className="btn btn-secondary"
-                                onClick={() => addToCart(food)}
-                              >
-                                Thêm giỏ
-                              </button>
-
-                              <button
-                                type="button"
-                                className="btn btn-primary"
-                                onClick={() => navigate(`/foods/${food.id}`)}
-                              >
-                                Chi tiết
-                              </button>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    );
+                    return <FoodCard key={food.id} food={mapped} />;
                   })}
                 </div>
               )}
