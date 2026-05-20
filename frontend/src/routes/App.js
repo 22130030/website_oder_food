@@ -15,7 +15,7 @@ import CheckoutPage from '../pages/customer/CheckoutPage';
 import ChatPage from '../pages/customer/ChatPage';
 import MenuPage from '../pages/customer/MenuPage';
 import OrderDetailPage from '../pages/customer/OrderDetailPage';
-import OrderHistoryPage from '../pages/customer/OrderHistoryPage';
+import OrderHistoryPage from "../pages/customer/OrderHistoryPage";
 import ProfilePage from '../pages/customer/ProfilePage';
 import AdminDashboard from '../pages/admin/AdminDashboard';
 import AdminFoodManagement from '../pages/admin/AdminFoodManagement';
