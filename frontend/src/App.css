@@ -36,3 +36,27 @@
     transform: rotate(360deg);
   }
 }
+
+
+/* Thông báo chung cho khách hàng: thay cho alert mặc định của trình duyệt */
+.foodstack-toast {
+  min-height: 66px !important;
+  padding: 7px 10px !important;
+  border-radius: 15px !important;
+  box-shadow: 0 14px 35px rgba(31, 41, 51, 0.2) !important;
+  font-family: inherit !important;
+}
+
+.foodstack-toast-body {
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.45;
+}
+
+.Toastify__toast-icon {
+  width: 23px !important;
+}
+
+.Toastify__close-button {
+  margin-top: 4px;
+}
