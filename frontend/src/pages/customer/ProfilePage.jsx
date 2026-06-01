@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import Navbar from '../../components/common/Navbar';
 import Footer from '../../components/common/Footer';
 import { useAuth } from '../../context/AuthContext';
+import { toast } from 'react-toastify';
 import { profileAPI } from '../../services/api';
 import './ProfilePage.css';
 
@@ -32,11 +33,13 @@ const ProfilePage = () => {
   });
 
   const [loading, setLoading] = useState(false);
-  const [msg, setMsg] = useState({ type: '', text: '' });
 
   const showMsg = (type, text) => {
-    setMsg({ type, text });
-    setTimeout(() => setMsg({ type: '', text: '' }), 3000);
+    if (type === 'success') {
+      toast.success(text);
+    } else {
+      toast.error(text);
+    }
   };
 
   const getAvatarSrc = (avatarUrl) => {
@@ -332,16 +335,6 @@ const ProfilePage = () => {
             </div>
 
             <div className="profile-content card">
-              {msg.text && (
-                <div
-                  className={`alert alert-${
-                    msg.type === 'success' ? 'success' : 'error'
-                  }`}
-                >
-                  {msg.text}
-                </div>
-              )}
-
               {activeTab === 'profile' && (
                 <>
                   <h2>👤 Thông tin cá nhân</h2>

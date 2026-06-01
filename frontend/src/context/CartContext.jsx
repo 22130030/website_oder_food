@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useEffect, useMemo, useState, useCallback } from 'react';
 import axios from 'axios';
+import { toast } from 'react-toastify';
 
 const CartContext = createContext();
 
@@ -59,7 +60,7 @@ export const CartProvider = ({ children }) => {
     const userId = getUserId();
 
     if (!userId) {
-      alert('Vui lòng đăng nhập để thêm vào giỏ hàng');
+      toast.warning('Vui lòng đăng nhập để thêm vào giỏ hàng');
       return;
     }
 
@@ -75,10 +76,10 @@ export const CartProvider = ({ children }) => {
 
       await loadCartFromDatabase();
 
-      alert('Đã thêm vào giỏ hàng');
+      toast.success('Đã thêm món vào giỏ hàng!');
     } catch (error) {
       console.error('Lỗi thêm giỏ hàng:', error);
-      alert('Không thể thêm vào giỏ hàng');
+      toast.error('Không thể thêm vào giỏ hàng');
     }
   };
 
@@ -111,7 +112,7 @@ export const CartProvider = ({ children }) => {
   const userId = getUserId();
 
   if (!userId) {
-    alert('Vui lòng đăng nhập');
+    toast.warning('Vui lòng đăng nhập');
     return;
   }
 
@@ -122,10 +123,10 @@ export const CartProvider = ({ children }) => {
 
     setCartItems((prev) => prev.filter((item) => item.id !== foodId));
 
-    alert('Đã xóa món khỏi giỏ hàng');
+    toast.success('Đã xóa món khỏi giỏ hàng');
   } catch (error) {
     console.error('Lỗi xóa món khỏi giỏ:', error);
-    alert('Không thể xóa món khỏi giỏ hàng');
+    toast.error('Không thể xóa món khỏi giỏ hàng');
   }
 };
 

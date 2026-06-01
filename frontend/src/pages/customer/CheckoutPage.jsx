@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
 
 import Navbar from "../../components/common/Navbar";
 import Footer from "../../components/common/Footer";
@@ -47,18 +48,18 @@ const CheckoutPage = () => {
     e.preventDefault();
 
     if (!token) {
-      alert("Vui lòng đăng nhập trước khi đặt hàng!");
+      toast.warning("Vui lòng đăng nhập trước khi đặt hàng!");
       navigate("/login");
       return;
     }
 
     if (!cartItems || cartItems.length === 0) {
-      alert("Giỏ hàng đang trống!");
+      toast.info("Giỏ hàng đang trống!");
       return;
     }
 
     if (!form.shippingName || !form.shippingPhone || !form.shippingAddress) {
-      alert("Vui lòng nhập đầy đủ thông tin giao hàng!");
+      toast.warning("Vui lòng nhập đầy đủ thông tin giao hàng!");
       return;
     }
 
@@ -90,10 +91,20 @@ const CheckoutPage = () => {
 
       clearCart();
 
-      alert(`Đặt hàng COD thành công: ${data?.orderCode || ""}`);
+      const successOrder = {
+        orderCode: data?.orderCode || "",
+        totalAmount: data?.totalAmount ?? finalTotal,
+        paymentMethod: form.paymentMethod,
+      };
 
-      navigate("/orders", {
-        state: { success: true }
+      sessionStorage.setItem(
+        "latestSuccessfulOrder",
+        JSON.stringify(successOrder)
+      );
+
+      navigate("/order-success", {
+        replace: true,
+        state: successOrder,
       });
     } catch (err) {
       console.error("Checkout error:", err);
@@ -103,7 +114,11 @@ const CheckoutPage = () => {
         err?.response?.data ||
         "Đặt hàng thất bại! Vui lòng thử lại sau.";
 
-      alert(message);
+      toast.error(
+        typeof message === "string"
+          ? message
+          : "Đặt hàng thất bại! Vui lòng thử lại sau."
+      );
     } finally {
       setLoading(false);
     }

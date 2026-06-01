@@ -12,6 +12,7 @@ import RegisterPage from '../pages/auth/RegisterPage';
 import ForgotPasswordPage from '../pages/auth/ForgotPasswordPage';
 import CartPage from '../pages/customer/CartPage';
 import CheckoutPage from '../pages/customer/CheckoutPage';
+import OrderSuccessPage from '../pages/customer/OrderSuccessPage';
 import ChatPage from '../pages/customer/ChatPage';
 import MenuPage from '../pages/customer/MenuPage';
 import OrderDetailPage from '../pages/customer/OrderDetailPage';
@@ -40,6 +41,7 @@ function App() {
             <Route path="/cart" element={<CartPage />} />
             <Route path="/chat" element={<ChatPage />} />
             <Route path="/checkout" element={<CheckoutPage />} />
+            <Route path="/order-success" element={<OrderSuccessPage />} />
             <Route path="/foods/:id" element={<FoodDetailPage />} />
             <Route path="/menu" element={<MenuPage />} />
             <Route path="/orders/:id" element={<OrderDetailPage />} />
@@ -63,6 +65,8 @@ function App() {
             pauseOnHover
             draggable
             theme="colored"
+            toastClassName="foodstack-toast"
+            bodyClassName="foodstack-toast-body"
           />
         </CartProvider>
       </AuthProvider>
