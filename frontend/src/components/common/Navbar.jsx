@@ -71,7 +71,7 @@ const Navbar = () => {
   return (
     <nav className="navbar">
       <div className="navbar-inner">
-        <Link to="/" className="navbar-brand">
+        <Link to="/home" className="navbar-brand">
           🍔 <span>NLU-FoodStack</span>
         </Link>
 
@@ -79,7 +79,7 @@ const Navbar = () => {
           <Link to="/home"       className={isActive('/home')}       onClick={close}>Trang chủ</Link>
           <Link to="/menu"   className={isActive('/menu')}   onClick={close}>Thực đơn</Link>
           <Link to="/orders" className={isActive('/orders')} onClick={close}>Đơn hàng</Link>
-          <Link to="/chat" className="nav-link support-link">
+          <Link to="/chat" className={`${isActive('/chat')} support-link`}>
   Hỗ trợ
   {chatUnread > 0 && <span className="chat-red-dot"></span>}
 </Link>
@@ -111,9 +111,9 @@ const Navbar = () => {
                   {user?.role === 'ADMIN' ? (
                     <Link to="/admin" className="dropdown-item" onClick={() => setDropdownOpen(false)}>⚙️ Quản trị</Link>
                   ) : (
-                    <Link to="/profile" className="dropdown-item" onClick={() => setDropdownOpen(false)}>👤 Hồ sơ</Link>
+                    <Link to="/profile" className="dropdown-item" onClick={() => setDropdownOpen(false)}>Hồ sơ</Link>
                   )}
-                  <button className="dropdown-item danger" onClick={handleLogout}>🚪 Đăng xuất</button>
+                  <button className="dropdown-item danger" onClick={handleLogout}>Đăng xuất</button>
                 </div>
               )}
             </div>

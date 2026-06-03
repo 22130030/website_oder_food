@@ -1,16 +1,53 @@
 import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import Navbar from '../../components/common/Navbar';
 import Footer from '../../components/common/Footer';
-import { useCart } from '../../context/CartContext';
 import { foodAPI } from '../../services/api';
 import FoodCard from '../../components/customer/FoodCard';
 import './MenuPage.css';
 
-const MenuPage = () => {
-  const navigate = useNavigate();
-  const { addToCart } = useCart();
+const leftDecorations = [
+  {
+    title: 'Salad tươi',
+    image:
+      'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=500',
+    tone: 'fresh',
+  },
+  {
+    title: 'Gà giòn',
+    image:
+      'https://images.unsplash.com/photo-1562967916-eb82221dfb92?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=500',
+    tone: 'warm',
+  },
+  {
+    title: 'Burger ngon',
+    image:
+      'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=500',
+    tone: 'gold',
+  },
+];
 
+const rightDecorations = [
+  {
+    title: 'Trà trái cây',
+    image:
+      'https://images.unsplash.com/photo-1513558161293-cdaf765ed2fd?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=500',
+    tone: 'berry',
+  },
+  {
+    title: 'Nước mát lạnh',
+    image:
+      'https://images.unsplash.com/photo-1544145945-f90425340c7e?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=500',
+    tone: 'fresh',
+  },
+  {
+    title: 'Món tráng miệng',
+    image:
+      'https://images.unsplash.com/photo-1488477181946-6428a0291777?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=500',
+    tone: 'gold',
+  },
+];
+
+const MenuPage = () => {
   const [foods, setFoods] = useState([]);
   const [categories, setCategories] = useState([]);
 
@@ -40,12 +77,6 @@ const MenuPage = () => {
       default:
         return {};
     }
-  };
-
-  const getImageSrc = (imageUrl) => {
-    if (!imageUrl) return '/placeholder-food.png';
-    if (imageUrl.startsWith('http')) return imageUrl;
-    return `http://localhost:8080${imageUrl}`;
   };
 
   const loadCategories = async () => {
@@ -124,16 +155,50 @@ const MenuPage = () => {
       <Navbar />
 
       <div className="menu-page">
-        <div className="inner">
-          <div className="menu-header">
-            <h1>🍔 Thực đơn</h1>
-            <p>Khám phá các món ăn ngon tại NLU-FoodStack</p>
+        <div className="menu-side-decor" aria-hidden="true">
+          <div className="menu-side-rail menu-side-left">
+            {leftDecorations.map((item, index) => (
+              <div
+                key={`left-${index}`}
+                className={`menu-decor-card tone-${item.tone} ${index === 1 ? 'offset-card' : ''}`}
+              >
+                <img src={item.image} alt={item.title} />
+                <span>{item.title}</span>
+              </div>
+            ))}
           </div>
+
+          <div className="menu-side-rail menu-side-right">
+            {rightDecorations.map((item, index) => (
+              <div
+                key={`right-${index}`}
+                className={`menu-decor-card tone-${item.tone} ${index === 1 ? 'offset-card' : ''}`}
+              >
+                <img src={item.image} alt={item.title} />
+                <span>{item.title}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="inner">
+          <section className="menu-header">
+            <div className="menu-heading-copy">
+              <span className="menu-kicker">THỰC ĐƠN HÔM NAY</span>
+              <h1>Chọn món ngon, <span>đặt thật nhanh</span></h1>
+              <p>Khám phá các món hấp dẫn, lọc theo khẩu vị và nhận món nóng hổi tận nơi.</p>
+            </div>
+            <div className="menu-header-perks">
+              <div><strong>30'</strong><span>Giao nhanh</span></div>
+              <div><strong>4.8★</strong><span>Yêu thích</span></div>
+              <div><strong>20K</strong><span>Phí giao tối đa</span></div>
+            </div>
+          </section>
 
           <div className="menu-layout">
             <aside className="menu-sidebar">
               <div className="filter-card">
-                <h3>🔍 Tìm kiếm</h3>
+                <h3>Tìm kiếm</h3>
 
                 <form onSubmit={handleSearch}>
                   <input
@@ -141,15 +206,7 @@ const MenuPage = () => {
                     placeholder="Tên món ăn..."
                     value={keyword}
                     onChange={(e) => setKeyword(e.target.value)}
-                    style={{
-                      width: '100%',
-                      height: 48,
-                      border: '1px solid #e5e7eb',
-                      borderRadius: 14,
-                      padding: '0 14px',
-                      marginBottom: 14,
-                      outline: 'none',
-                    }}
+                    className="filter-input"
                   />
 
                   <button type="submit" className="btn btn-primary btn-full">
@@ -159,7 +216,7 @@ const MenuPage = () => {
               </div>
 
               <div className="filter-card">
-                <h3>📁 Danh mục</h3>
+                <h3>Danh mục</h3>
 
                 <button
                   type="button"
@@ -173,8 +230,7 @@ const MenuPage = () => {
                   <button
                     type="button"
                     key={category.id}
-                    className={`cat-filter-btn ${String(selectedCategoryId) === String(category.id) ? 'active' : ''
-                      }`}
+                    className={`cat-filter-btn ${String(selectedCategoryId) === String(category.id) ? 'active' : ''}`}
                     onClick={() => setSelectedCategoryId(category.id)}
                   >
                     {category.name}
@@ -183,20 +239,12 @@ const MenuPage = () => {
               </div>
 
               <div className="filter-card">
-                <h3>💰 Khoảng giá</h3>
+                <h3>Khoảng giá</h3>
 
                 <select
                   value={priceRange}
                   onChange={(e) => setPriceRange(e.target.value)}
-                  style={{
-                    width: '100%',
-                    height: 48,
-                    border: '1px solid #e5e7eb',
-                    borderRadius: 14,
-                    padding: '0 14px',
-                    outline: 'none',
-                    background: 'white',
-                  }}
+                  className="filter-select"
                 >
                   <option value="">Tất cả mức giá</option>
                   <option value="under30000">Dưới 30.000đ</option>
@@ -207,17 +255,9 @@ const MenuPage = () => {
               </div>
 
               <div className="filter-card">
-                <h3>⚙️ Lọc khác</h3>
+                <h3>Lọc khác</h3>
 
-                <label
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 10,
-                    marginBottom: 18,
-                    cursor: 'pointer',
-                  }}
-                >
+                <label className="stock-toggle">
                   <input
                     type="checkbox"
                     checked={onlyAvailable}
@@ -256,12 +296,12 @@ const MenuPage = () => {
               </div>
 
               {loading ? (
-                <div className="empty-state">
+                <div className="menu-empty-state">
                   <div className="icon">⏳</div>
                   <h3>Đang tải món ăn...</h3>
                 </div>
               ) : foods.length === 0 ? (
-                <div className="empty-state">
+                <div className="menu-empty-state">
                   <div className="icon">🍽️</div>
                   <h3>Không tìm thấy món ăn phù hợp</h3>
                   <p>Thử thay đổi từ khóa hoặc bộ lọc khác.</p>
@@ -269,7 +309,6 @@ const MenuPage = () => {
               ) : (
                 <div className="foods-grid">
                   {foods.map((food) => {
-                    // normalize keys to what FoodCard expects
                     const mapped = {
                       id: food.id,
                       name: food.name,

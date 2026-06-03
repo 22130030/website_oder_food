@@ -63,7 +63,7 @@ const FoodCard = ({ food }) => {
             disabled={!available}
             title={available ? 'Thêm vào giỏ hàng' : 'Món này đã hết'}
           >
-            {isAdded ? '✓ Thêm rồi' : '🛒 Thêm'}
+            {isAdded ? '✓ Thêm rồi' : 'Thêm'}
           </button>
         </div>
       </div>

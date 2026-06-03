@@ -582,3 +582,395 @@
     grid-template-columns: 1fr;
   }
 }
+/* Decorative additions */
+.hero-eyebrow {
+  display: inline-flex;
+  margin-bottom: 18px;
+  padding: 8px 14px;
+  border-radius: 999px;
+  background: #fff;
+  color: var(--primary);
+  border: 1px solid rgba(244, 81, 57, .12);
+  font-size: 13px;
+  font-weight: 750;
+  box-shadow: 0 10px 25px rgba(244, 81, 57, .07);
+}
+
+.hero-proof {
+  margin-top: 26px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 9px;
+}
+
+.hero-proof span {
+  padding: 8px 12px;
+  border-radius: 999px;
+  color: #4c5565;
+  background: rgba(255,255,255,.78);
+  border: 1px solid rgba(236,229,223,.9);
+  font-size: 12.5px;
+  font-weight: 650;
+}
+
+.benefit-section {
+  position: relative;
+  margin-top: -28px;
+  z-index: 4;
+  padding-bottom: 42px;
+}
+
+.benefit-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+}
+
+.benefit-card {
+  min-height: 92px;
+  padding: 18px;
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  background: white;
+  border: 1px solid #f0e6de;
+  border-radius: 19px;
+  box-shadow: 0 14px 32px rgba(42, 25, 15, .07);
+}
+
+.benefit-card > span {
+  flex: 0 0 47px;
+  height: 47px;
+  display: grid;
+  place-items: center;
+  border-radius: 15px;
+  background: var(--primary-soft);
+  font-size: 22px;
+}
+
+.benefit-card strong {
+  display: block;
+  margin-bottom: 4px;
+  color: var(--dark);
+  font-size: 14px;
+}
+
+.benefit-card p {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+@media (max-width: 950px) {
+  .benefit-section { margin-top: 0; padding-top: 20px; }
+  .benefit-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 520px) {
+  .benefit-grid { grid-template-columns: 1fr; }
+  .hero-proof { gap: 7px; }
+}
+
+
+/* ========== MODERN ORGANIC HOME DECOR - CLEAN STYLE ========== */
+.modern-home-section {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+}
+
+.modern-home-section .home-inner {
+  position: relative;
+  z-index: 2;
+}
+
+.modern-section-art {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.home-section-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  margin-bottom: 11px;
+  padding: 7px 13px;
+  border-radius: 999px;
+  color: #e85a35;
+  background: #fff0e7;
+  font-size: 12px;
+  font-weight: 850;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+
+/* --- Danh mục: nền kem, hình khối organic --- */
+.category-modern-section {
+  padding-top: 70px;
+  padding-bottom: 78px;
+  background:
+    linear-gradient(180deg, #fffdf9 0%, #fff7ee 100%);
+}
+
+.category-modern-section .category-heading {
+  position: relative;
+  z-index: 2;
+}
+
+.category-art .art-blob {
+  position: absolute;
+  width: 460px;
+  height: 385px;
+  left: -195px;
+  top: 18px;
+  border-radius: 50% 44% 52% 42%;
+  background:
+    radial-gradient(circle at 64% 44%, rgba(255, 190, 74, .36), rgba(255, 190, 74, .10) 48%, transparent 70%);
+  transform: rotate(-18deg);
+}
+
+.category-art .art-dots {
+  position: absolute;
+  width: 176px;
+  height: 140px;
+  right: 46px;
+  top: 66px;
+  opacity: .58;
+  background-image: radial-gradient(circle, #f1b764 2.3px, transparent 2.6px);
+  background-size: 18px 18px;
+}
+
+.category-art .art-ring {
+  position: absolute;
+  width: 310px;
+  height: 310px;
+  right: -142px;
+  bottom: 32px;
+  border-radius: 50%;
+  border: 42px solid rgba(255, 115, 69, .075);
+  box-shadow: inset 0 0 0 30px rgba(255, 194, 88, .055);
+}
+
+.category-modern-section .category-card {
+  position: relative;
+  border: 1px solid #f0e3d8;
+  box-shadow: 0 10px 30px rgba(69, 36, 17, .045);
+}
+
+.category-modern-section .category-card:hover {
+  border-color: rgba(242, 103, 52, .42);
+  box-shadow: 0 22px 46px rgba(233, 90, 39, .13);
+}
+
+/* --- Món nổi bật: nền sáng, đường cong + chấm bi --- */
+.featured-modern-section {
+  padding-top: 68px;
+  padding-bottom: 82px;
+  background:
+    linear-gradient(180deg, #ffffff 0%, #fff9f4 100%);
+}
+
+.featured-section-header {
+  align-items: flex-end;
+  margin-bottom: 34px;
+}
+
+.featured-section-header h2 {
+  margin: 0;
+}
+
+.featured-art .art-blob {
+  position: absolute;
+  width: 470px;
+  height: 470px;
+  right: -224px;
+  top: 98px;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at center, rgba(247, 118, 68, .15), rgba(247, 118, 68, .04) 46%, transparent 66%);
+}
+
+.featured-art .art-dots {
+  position: absolute;
+  width: 160px;
+  height: 118px;
+  left: 34px;
+  bottom: 58px;
+  opacity: .40;
+  background-image: radial-gradient(circle, #f09362 2px, transparent 2.4px);
+  background-size: 17px 17px;
+}
+
+.featured-art .art-line {
+  position: absolute;
+  left: -4%;
+  right: -4%;
+  top: 38px;
+  height: 70px;
+  border-top: 2px dashed rgba(241, 164, 103, .22);
+  border-radius: 52% 48% 0 0 / 100% 100% 0 0;
+  transform: rotate(-1.2deg);
+}
+
+.featured-modern-section .food-card {
+  position: relative;
+  z-index: 1;
+}
+
+/* --- CTA: banner nổi bật riêng, không dùng pattern lặp --- */
+.cta-modern-section {
+  padding: 68px 0 82px;
+  background: #fff9f4;
+}
+
+.cta-modern-section .cta-card {
+  position: relative;
+  overflow: hidden;
+  grid-template-columns: 1fr 420px;
+  padding: 44px 38px;
+  border: none;
+  border-radius: 30px;
+  background:
+    linear-gradient(118deg, #f45139 0%, #fb663e 45%, #ff9e48 100%);
+  box-shadow: 0 28px 60px rgba(211, 74, 38, .20);
+}
+
+.cta-art {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.cta-ring {
+  position: absolute;
+  display: block;
+  border-radius: 50%;
+  border: 1px solid rgba(255,255,255,.22);
+}
+
+.cta-ring-one {
+  width: 420px;
+  height: 420px;
+  left: -188px;
+  bottom: -235px;
+}
+
+.cta-ring-two {
+  width: 335px;
+  height: 335px;
+  left: -145px;
+  bottom: -196px;
+  border-width: 2px;
+  border-color: rgba(255,255,255,.17);
+}
+
+.cta-dot-grid {
+  position: absolute;
+  width: 165px;
+  height: 112px;
+  right: 35px;
+  top: 26px;
+  opacity: .42;
+  background-image: radial-gradient(circle, rgba(255,255,255,.92) 2px, transparent 2.4px);
+  background-size: 16px 16px;
+}
+
+.cta-modern-section .cta-content,
+.cta-modern-section .cta-visual {
+  position: relative;
+  z-index: 1;
+}
+
+.cta-badge {
+  display: inline-flex;
+  margin-bottom: 15px;
+  padding: 7px 14px;
+  border: 1px solid rgba(255,255,255,.25);
+  border-radius: 999px;
+  color: #fff;
+  background: rgba(255,255,255,.14);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+
+.cta-modern-section .cta-content h2 {
+  max-width: 520px;
+  margin-bottom: 13px;
+  color: #fff;
+  font-size: clamp(29px, 3.4vw, 38px);
+}
+
+.cta-modern-section .cta-content p {
+  max-width: 510px;
+  color: rgba(255,255,255,.91);
+  font-size: 16px;
+}
+
+.cta-modern-section .cta-buttons .btn-primary {
+  color: #ed5937;
+  background: #fff;
+  box-shadow: 0 14px 30px rgba(143, 43, 18, .16);
+}
+
+.cta-modern-section .cta-buttons .btn-primary:hover {
+  background: #fff7f3;
+}
+
+.cta-support-btn {
+  color: #fff !important;
+  background: transparent !important;
+  border: 2px solid rgba(255,255,255,.48) !important;
+}
+
+.cta-support-btn:hover {
+  border-color: rgba(255,255,255,.78) !important;
+  background: rgba(255,255,255,.10) !important;
+}
+
+.cta-modern-section .cta-visual img {
+  height: 272px;
+  border-radius: 21px;
+  border: 5px solid rgba(255,255,255,.20);
+  box-shadow: 0 22px 45px rgba(123, 44, 19, .18);
+}
+
+@media (max-width: 900px) {
+  .category-modern-section,
+  .featured-modern-section {
+    padding-top: 54px;
+    padding-bottom: 60px;
+  }
+
+  .category-art .art-dots,
+  .featured-art .art-dots {
+    opacity: .30;
+  }
+
+  .cta-modern-section .cta-card {
+    grid-template-columns: 1fr;
+    padding: 30px 22px 22px;
+  }
+
+  .cta-modern-section .cta-visual img {
+    height: 230px;
+  }
+}
+
+@media (max-width: 520px) {
+  .category-art .art-ring,
+  .featured-art .art-line {
+    display: none;
+  }
+
+  .category-art .art-blob,
+  .featured-art .art-blob {
+    opacity: .48;
+  }
+
+  .cta-dot-grid {
+    display: none;
+  }
+}

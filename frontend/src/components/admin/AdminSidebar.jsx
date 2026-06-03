@@ -7,12 +7,12 @@ import { chatAPI } from '../../services/api';
 import './AdminSidebar.css';
 
 const MENU_ITEMS = [
-  { path: '/admin', icon: '📊', label: 'Dashboard', exact: true },
-  { path: '/admin/foods', icon: '🍽️', label: 'Quản lý món ăn' },
-  { path: '/admin/orders', icon: '📦', label: 'Quản lý đơn hàng' },
-  { path: '/admin/users', icon: '👥', label: 'Quản lý người dùng' },
-  { path: '/admin/chat', icon: '💬', label: 'Quản lý chat' },
-  { path: '/admin/statistics', icon: '📈', label: 'Thống kê & Báo cáo' },
+  { path: '/admin', icon: '', label: 'Dashboard', exact: true },
+  { path: '/admin/foods', icon: '', label: 'Quản lý món ăn' },
+  { path: '/admin/orders', icon: '', label: 'Quản lý đơn hàng' },
+  { path: '/admin/users', icon: '', label: 'Quản lý người dùng' },
+  { path: '/admin/chat', icon: '', label: 'Quản lý chat' },
+  { path: '/admin/statistics', icon: '', label: 'Thống kê & Báo cáo' },
 ];
 
 const AdminSidebar = () => {
@@ -123,7 +123,7 @@ const AdminSidebar = () => {
 
       <div className="admin-sidebar-footer">
         <button className="sidebar-footer-btn danger" onClick={handleLogout}>
-          🚪 Đăng xuất
+          Đăng xuất
         </button>
       </div>
     </aside>

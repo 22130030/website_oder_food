@@ -98,50 +98,37 @@ const FoodDetailPage = () => {
     navigate('/cart');
   };
 
-  if (loading) {
-    return (
-      <div className="page-wrapper">
-        <Navbar />
+  const renderStatePage = (icon, title, message = '') => (
+    <div className="page-wrapper">
+      <Navbar />
 
-        <div className="food-detail-page">
-          <div className="inner">
-            <button className="back-btn" onClick={() => navigate(-1)}>
-              ← Quay lại
-            </button>
+      <div className="food-detail-page detail-state-page">
+        <div className="inner">
+          <button className="back-btn" type="button" onClick={() => navigate(-1)}>
+            <span>←</span> Quay lại
+          </button>
 
-            <div className="empty-state card">
-              <div className="icon">⏳</div>
-              <h3>Đang tải chi tiết món ăn...</h3>
-            </div>
+          <div className="empty-state card">
+            <div className="icon">{icon}</div>
+            <h3>{title}</h3>
+            {message && <p>{message}</p>}
           </div>
         </div>
-
-        <Footer />
       </div>
-    );
+
+      <Footer />
+    </div>
+  );
+
+  if (loading) {
+    return renderStatePage('⏳', 'Đang tải chi tiết món ăn...');
   }
 
   if (!food) {
-    return (
-      <div className="page-wrapper">
-        <Navbar />
-
-        <div className="food-detail-page">
-          <div className="inner">
-            <button className="back-btn" onClick={() => navigate(-1)}>
-              ← Quay lại
-            </button>
-
-            <div className="empty-state card">
-              <div className="icon">🍽️</div>
-              <h3>Không tìm thấy món ăn</h3>
-              <p>Món ăn này có thể đã bị xóa hoặc không còn tồn tại.</p>
-            </div>
-          </div>
-        </div>
-
-        <Footer />
-      </div>
+    return renderStatePage(
+      '🍽️',
+      'Không tìm thấy món ăn',
+      'Món ăn này có thể đã bị xóa hoặc không còn tồn tại.'
     );
   }
 
@@ -153,183 +140,245 @@ const FoodDetailPage = () => {
 
   const finalPrice = discountPrice || price;
   const totalPrice = finalPrice * quantity;
-
   const isAvailable = food.isAvailable !== false;
+  const categoryName = food.categoryName || food.category?.name || 'Món ăn';
+  const rating = food.avgRating || '4.8';
+  const totalSold = food.totalSold || 0;
+  const discountPercent =
+    discountPrice && price > discountPrice
+      ? Math.round(((price - discountPrice) / price) * 100)
+      : 0;
 
   return (
     <div className="page-wrapper">
       <Navbar />
 
       <div className="food-detail-page">
+        <div className="detail-floating-decor decor-left" aria-hidden="true">🍅</div>
+        <div className="detail-floating-decor decor-right" aria-hidden="true">🥤</div>
+        <div className="detail-floating-decor decor-bottom" aria-hidden="true">🥬</div>
+
         <div className="inner">
-          <button className="back-btn" onClick={() => navigate(-1)}>
-            ← Quay lại
-          </button>
+          <div className="detail-breadcrumb">
+            <button className="back-btn" type="button" onClick={() => navigate(-1)}>
+              <span>←</span> Quay lại
+            </button>
 
-          <div className="food-detail-layout">
-            <div className="food-detail-image">
-              <img src={getImageSrc(food.imageUrl)} alt={food.name} />
+            <div className="breadcrumb-path">
+              <button type="button" onClick={() => navigate('/menu')}>Thực đơn</button>
+              <span>/</span>
+              <span>{categoryName}</span>
+              <span>/</span>
+              <strong>{food.name}</strong>
+            </div>
+          </div>
 
-              {!isAvailable && (
-                <div className="sold-out-overlay">
-                  Hết món
+          <section className="food-hero-card">
+            <div className="food-media-column">
+              <div className="food-detail-image">
+                <div className="image-badges">
+                  <span className="best-choice-badge">Món được yêu thích</span>
+                  {discountPercent > 0 && (
+                    <span className="discount-badge">-{discountPercent}%</span>
+                  )}
                 </div>
-              )}
+
+                <img src={getImageSrc(food.imageUrl)} alt={food.name} />
+
+                {!isAvailable && (
+                  <div className="sold-out-overlay">
+                    <span>Tạm hết món</span>
+                    <small>Vui lòng chọn món khác</small>
+                  </div>
+                )}
+              </div>
+
+              <div className="image-service-grid">
+                <div className="service-item">
+                  <div className="service-icon">🌿</div>
+                  <div>
+                    <strong>Tươi ngon</strong>
+                    <span>Chế biến trong ngày</span>
+                  </div>
+                </div>
+                <div className="service-item">
+                  <div className="service-icon">📦</div>
+                  <div>
+                    <strong>Đóng gói sạch</strong>
+                    <span>An toàn giao nhận</span>
+                  </div>
+                </div>
+              </div>
             </div>
 
             <div className="food-detail-info">
-              <span className="detail-category">
-                {food.categoryName || food.category?.name || 'Món ăn'}
-              </span>
+              <div className="detail-top-tags">
+                <span className="detail-category">{categoryName}</span>
+                <span className={`stock-status ${isAvailable ? 'available' : 'unavailable'}`}>
+                  {isAvailable ? '● Còn hàng' : '● Tạm hết'}
+                </span>
+              </div>
 
               <h1>{food.name}</h1>
 
               <div className="detail-rating">
-                ⭐⭐⭐⭐⭐
-                <strong> {food.avgRating || '4.8'}</strong>
-                <span> ({food.totalSold || 0} đã bán)</span>
+                <span className="stars">★★★★★</span>
+                <strong>{rating}</strong>
+                <span className="divider"></span>
+                <span>{totalSold} lượt đặt</span>
               </div>
 
               <p className="detail-desc">
-                {food.description || 'Món ăn ngon tại NLU-FoodStack.'}
+                {food.description || 'Món ăn nóng hổi, thơm ngon và được chuẩn bị cẩn thận tại NLU-FoodStack.'}
               </p>
 
               <div className="detail-meta">
-                <span>⏱️ Chuẩn bị: <strong>10 phút</strong></span>
-                <span>🚚 Giao hàng: <strong>30 phút</strong></span>
+                <div className="meta-item">
+                  <span>⏱️</span>
+                  <div><small>Chuẩn bị</small><strong>10 phút</strong></div>
+                </div>
+                <div className="meta-item">
+                  <span>🛵</span>
+                  <div><small>Giao dự kiến</small><strong>30 phút</strong></div>
+                </div>
+                <div className="meta-item">
+                  <span>⭐</span>
+                  <div><small>Đánh giá</small><strong>{rating}/5</strong></div>
+                </div>
               </div>
 
               <div className="ingredients-box">
-                <h3>📌 Thông tin món ăn</h3>
-
+                <h3>Thông tin món ăn</h3>
                 <div className="ingredients-list">
-                  <span className="ingredient-tag">
-                    {food.categoryName || food.category?.name || 'Món ăn'}
+                  <span className="ingredient-tag">🍽️ {categoryName}</span>
+                  <span className={`ingredient-tag ${isAvailable ? 'success-tag' : 'danger-tag'}`}>
+                    {isAvailable ? '✓ Có thể đặt ngay' : 'Tạm ngưng phục vụ'}
                   </span>
-
-                  <span className="ingredient-tag">
-                    {isAvailable ? 'Còn hàng' : 'Tạm hết'}
-                  </span>
-
-                  <span className="ingredient-tag">
-                    Đã bán {food.totalSold || 0}
-                  </span>
+                  <span className="ingredient-tag">🔥 Đã bán {totalSold}</span>
                 </div>
               </div>
 
-              <div className="price-section">
-                <div className="detail-price">
-                  {discountPrice ? (
-                    <>
-                      <span style={{ color: 'var(--primary)' }}>
-                        {discountPrice.toLocaleString('vi-VN')}đ
-                      </span>
+              <div className="purchase-panel">
+                <div className="price-row">
+                  <div>
+                    <p className="price-label">Giá món</p>
+                    <div className="detail-price">
+                      <span>{finalPrice.toLocaleString('vi-VN')}đ</span>
+                      {discountPrice && (
+                        <span className="detail-original-price">{price.toLocaleString('vi-VN')}đ</span>
+                      )}
+                    </div>
+                  </div>
 
-                      <span
-                        style={{
-                          marginLeft: 12,
-                          color: '#999',
-                          fontSize: 20,
-                          textDecoration: 'line-through',
-                        }}
+                  <div className="quantity-wrap">
+                    <p className="price-label">Số lượng</p>
+                    <div className="quantity-selector">
+                      <button
+                        type="button"
+                        aria-label="Giảm số lượng"
+                        onClick={() => setQuantity(q => Math.max(1, q - 1))}
                       >
-                        {price.toLocaleString('vi-VN')}đ
-                      </span>
-                    </>
-                  ) : (
-                    <span>{price.toLocaleString('vi-VN')}đ</span>
-                  )}
+                        −
+                      </button>
+                      <span>{quantity}</span>
+                      <button
+                        type="button"
+                        aria-label="Tăng số lượng"
+                        onClick={() => setQuantity(q => q + 1)}
+                      >
+                        +
+                      </button>
+                    </div>
+                  </div>
                 </div>
 
-                <div className="quantity-selector">
-                  <button
-                    type="button"
-                    onClick={() => setQuantity(q => Math.max(1, q - 1))}
-                  >
-                    -
-                  </button>
-
-                  <span>{quantity}</span>
-
-                  <button
-                    type="button"
-                    onClick={() => setQuantity(q => q + 1)}
-                  >
-                    +
-                  </button>
-                </div>
-
-                <div
-                  style={{
-                    marginBottom: 20,
-                    fontSize: 18,
-                    fontWeight: 700,
-                  }}
-                >
-                  Tổng tiền:{' '}
-                  <span style={{ color: 'var(--primary)' }}>
-                    {totalPrice.toLocaleString('vi-VN')}đ
-                  </span>
+                <div className="detail-total">
+                  <span>Tổng thanh toán</span>
+                  <strong>{totalPrice.toLocaleString('vi-VN')}đ</strong>
                 </div>
 
                 {added && (
-                  <div
-                    style={{
-                      marginBottom: 14,
-                      padding: '10px 14px',
-                      borderRadius: 10,
-                      background: '#ecfdf5',
-                      color: '#047857',
-                      fontWeight: 700,
-                    }}
-                  >
-                    ✅ Đã thêm vào giỏ hàng
+                  <div className="add-success-message">
+                    ✅ Đã thêm món vào giỏ hàng của bạn.
                   </div>
                 )}
 
                 <div className="detail-actions">
                   <button
                     className="btn btn-outline"
+                    type="button"
                     onClick={handleAddToCart}
                     disabled={!isAvailable}
                   >
-                    🛒 Thêm vào giỏ
+                     Thêm vào giỏ
                   </button>
 
                   <button
                     className="btn btn-primary"
+                    type="button"
                     onClick={handleBuyNow}
                     disabled={!isAvailable}
                   >
-                    🚀 Đặt ngay
+                    Đặt ngay
                   </button>
                 </div>
               </div>
             </div>
-          </div>
+          </section>
 
-          <div className="reviews-section">
-            <h2>💬 Đánh giá từ khách hàng</h2>
-
-            <div className="reviews-list">
-              <div className="review-card card">
-                <div className="review-header">
-                  <div className="reviewer-avatar">A</div>
-
-                  <div>
-                    <strong>Khách hàng</strong>
-                    <div className="review-rating">⭐⭐⭐⭐⭐</div>
-                  </div>
-
-                  <span className="review-date">Hôm nay</span>
+          <section className="detail-extra-section">
+            <div className="detail-benefits-card">
+              <span className="section-kicker">QUYỀN LỢI KHI ĐẶT MÓN</span>
+              <h2>Thưởng thức món ngon thật an tâm</h2>
+              <div className="benefit-list">
+                <div>
+                  <span>🚀</span>
+                  <strong>Giao hàng nhanh</strong>
+                  <p>Ưu tiên xử lý đơn ngay sau khi đặt.</p>
                 </div>
-
-                <p className="review-comment">
-                  Món ăn ngon, giao hàng nhanh và chất lượng ổn định.
-                </p>
+                <div>
+                  <span>🛡️</span>
+                  <strong>Thanh toán an toàn</strong>
+                  <p>Thông tin đơn hàng được bảo vệ.</p>
+                </div>
+                <div>
+                  <span>💬</span>
+                  <strong>Hỗ trợ tận tình</strong>
+                  <p>Luôn sẵn sàng khi bạn cần giúp đỡ.</p>
+                </div>
               </div>
             </div>
-          </div>
+
+            <div className="reviews-section">
+              <div className="reviews-heading">
+                <div>
+                  <span className="section-kicker">PHẢN HỒI KHÁCH HÀNG</span>
+                  <h2>Đánh giá món ăn</h2>
+                </div>
+                <div className="review-score">
+                  <strong>{rating}</strong>
+                  <span>★★★★★</span>
+                  <small>Dựa trên phản hồi</small>
+                </div>
+              </div>
+
+              <div className="reviews-list">
+                <div className="review-card">
+                  <div className="review-header">
+                    <div className="reviewer-avatar">A</div>
+                    <div>
+                      <strong>Khách hàng</strong>
+                      <div className="review-rating">★★★★★</div>
+                    </div>
+                    <span className="review-date">Hôm nay</span>
+                  </div>
+                  <p className="review-comment">
+                    Món ăn ngon, phần ăn đẹp mắt, giao hàng nhanh và chất lượng ổn định.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </section>
         </div>
       </div>
 

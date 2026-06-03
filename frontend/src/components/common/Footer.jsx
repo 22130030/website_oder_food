@@ -22,7 +22,7 @@ const Footer = () => (
         {/* Links */}
         <div className="footer-col">
           <h4>Khám phá</h4>
-          <Link to="/">Trang chủ</Link>
+          <Link to="/home">Trang chủ</Link>
           <Link to="/menu">Thực đơn</Link>
           <Link to="/orders">Đơn hàng</Link>
           <Link to="/chat">Hỗ trợ</Link>

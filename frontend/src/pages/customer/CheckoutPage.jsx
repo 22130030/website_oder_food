@@ -130,13 +130,26 @@ const CheckoutPage = () => {
 
       <div className="checkout-page">
         <div className="inner">
-          <h1 className="checkout-title">📦 Thanh toán đơn hàng</h1>
+          <header className="checkout-header">
+            <div>
+              <span className="checkout-kicker">THANH TOÁN AN TOÀN</span>
+              <h1 className="checkout-title">Hoàn tất đơn hàng</h1>
+              <p>Điền thông tin nhận món và lựa chọn phương thức thanh toán phù hợp.</p>
+            </div>
+            <div className="checkout-steps" aria-label="Các bước đặt hàng">
+              <div className="done"><b>✓</b><span>Giỏ hàng</span></div>
+              <i />
+              <div className="active"><b>2</b><span>Thanh toán</span></div>
+              <i />
+              <div><b>3</b><span>Hoàn tất</span></div>
+            </div>
+          </header>
 
           <form onSubmit={handleSubmit}>
             <div className="checkout-layout">
               <div className="checkout-form">
                 <div className="checkout-section card">
-                  <h3>👤 Thông tin giao hàng</h3>
+                  <h3>Thông tin giao hàng</h3>
 
                   <div className="grid-2">
                     <div className="form-group">
@@ -193,7 +206,7 @@ const CheckoutPage = () => {
                 </div>
 
                 <div className="checkout-section card">
-                  <h3>💳 Phương thức thanh toán</h3>
+                  <h3>Phương thức thanh toán</h3>
 
                   <div className="payment-options">
                     <label
@@ -209,7 +222,7 @@ const CheckoutPage = () => {
                       />
 
                       <div>
-                        <strong>💵 Thanh toán khi nhận hàng COD</strong>
+                        <strong>Thanh toán khi nhận hàng COD</strong>
                         <p>Trả tiền mặt khi nhận hàng</p>
                       </div>
                     </label>
@@ -227,7 +240,7 @@ const CheckoutPage = () => {
                       />
 
                       <div>
-                        <strong>🏦 VNPAY</strong>
+                        <strong>VNPAY</strong>
                         <p>Thanh toán qua cổng VNPAY</p>
                       </div>
                     </label>
@@ -241,12 +254,13 @@ const CheckoutPage = () => {
                 >
                   {loading
                     ? "⏳ Đang xử lý đơn hàng..."
-                    : "✅ Xác nhận đặt hàng"}
+                    : "Xác nhận đặt hàng"}
                 </button>
               </div>
 
               <div className="checkout-summary card">
                 <h3>🛍️ Đơn hàng của bạn</h3>
+                <p className="summary-caption">Thông tin giá được hiển thị minh bạch trước khi đặt món.</p>
 
                 <div className="checkout-items">
                   {cartItems.map((item) => (
@@ -286,6 +300,12 @@ const CheckoutPage = () => {
                     {finalTotal.toLocaleString("vi-VN")}đ
                   </strong>
                 </div>
+
+                {/* <div className="checkout-assurance">
+                  <span>🔒 Bảo mật thanh toán</span>
+                  <span>💬 Hỗ trợ sau đặt hàng</span>
+                  <span>🛵 Theo dõi trạng thái đơn</span>
+                </div> */}
               </div>
             </div>
           </form>
