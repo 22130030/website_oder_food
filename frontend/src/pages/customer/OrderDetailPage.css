@@ -3,13 +3,13 @@
   background: #f8f9fa;
 }
 
-.inner {
+.order-detail-page .inner {
   max-width: 1200px;
   margin: 0 auto;
   padding: 0 20px;
 }
 
-.back-btn {
+.order-detail-page .back-btn {
   background: none;
   border: none;
   color: var(--primary);
@@ -130,14 +130,14 @@
 }
 
 /* Card chung */
-.card {
+.order-detail-page .card {
   background: white;
   padding: 28px;
   border-radius: 16px;
   box-shadow: var(--shadow);
 }
 
-h3 {
+.order-detail-page h3 {
   font-size: 18px;
   font-weight: 700;
   margin-bottom: 20px;
@@ -156,7 +156,7 @@ h3 {
   border-bottom: none;
 }
 
-.item-info strong {
+.order-detail-page .item-info strong {
   display: block;
   margin-bottom: 4px;
 }
@@ -224,7 +224,7 @@ h3 {
   margin-bottom: 12px;
 }
 
-.btn-full {
+.order-detail-page .btn-full {
   width: 100%;
   text-align: center;
   padding: 14px;

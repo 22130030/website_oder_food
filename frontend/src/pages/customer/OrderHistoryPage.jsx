@@ -2,8 +2,78 @@ import { useEffect, useMemo, useState } from "react";
 import { getMyOrders, getOrderDetail } from "../../services/orderApi";
 import Navbar from "../../components/common/Navbar";
 import Footer from "../../components/common/Footer";
-import logo from "../../logo.svg";
+import { foodAPI } from "../../services/api";
 import "./OrderHistoryPage.css";
+
+const FOOD_PLACEHOLDER = `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(`
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 140 140">
+    <defs>
+      <linearGradient id="bg" x1="0" x2="1" y1="0" y2="1">
+        <stop stop-color="#fff4e8"/>
+        <stop offset="1" stop-color="#ffe0cf"/>
+      </linearGradient>
+    </defs>
+    <rect width="140" height="140" rx="26" fill="url(#bg)"/>
+    <circle cx="70" cy="66" r="35" fill="#fff" stroke="#f45139" stroke-width="4"/>
+    <path d="M39 68h62c-2 18-15 30-31 30S41 86 39 68Z" fill="#f45139"/>
+    <path d="M48 61c8-8 15 6 23-3s14 5 23-3" fill="none" stroke="#ffae45" stroke-width="6" stroke-linecap="round"/>
+    <path d="M46 102h48" stroke="#e03c2d" stroke-width="5" stroke-linecap="round"/>
+    <text x="70" y="121" text-anchor="middle" font-family="Arial" font-size="10" font-weight="700" fill="#bd4d34">MÓN NGON</text>
+  </svg>
+`)}`;
+
+const getOrderItems = (order) =>
+  order?.items || order?.orderItems || order?.orderDetails || order?.details || [];
+
+const getRawItemImage = (item) =>
+  item?.foodImage ||
+  item?.foodImageUrl ||
+  item?.imageUrl ||
+  item?.image ||
+  item?.productImage ||
+  item?.productImageUrl ||
+  item?.food?.imageUrl ||
+  item?.food?.image ||
+  item?.product?.imageUrl ||
+  item?.product?.image ||
+  item?.resolvedImage ||
+  "";
+
+const getItemImage = (item) => getRawItemImage(item) || FOOD_PLACEHOLDER;
+
+const getItemName = (item) =>
+  item?.foodName ||
+  item?.productName ||
+  item?.name ||
+  item?.food?.name ||
+  item?.product?.name ||
+  item?.resolvedName ||
+  "Món ăn đã đặt";
+
+const getFoodId = (item) =>
+  item?.foodId || item?.productId || item?.food?.id || item?.product?.id;
+
+const resolveItemFood = async (item) => {
+  if (!item || getRawItemImage(item)) return item;
+
+  const foodId = getFoodId(item);
+  if (!foodId) return item;
+
+  try {
+    const response = await foodAPI.getFoodById(foodId);
+    const food = response?.data || {};
+
+    return {
+      ...item,
+      resolvedImage: food.imageUrl || food.foodImage || food.image || "",
+      resolvedName: getItemName(item) === "Món ăn đã đặt" ? food.name : getItemName(item),
+    };
+  } catch (error) {
+    console.warn("Không tải được ảnh món trong đơn hàng:", error);
+    return item;
+  }
+};
+
 
 function OrderHistoryPage() {
   const [orders, setOrders] = useState([]);
@@ -18,14 +88,14 @@ function OrderHistoryPage() {
     value ? new Date(value).toLocaleString("vi-VN") : "--";
 
   const statusMap = {
-    ALL: { text: "Tất cả", icon: "🧾" },
+    ALL: { text: "Tất cả", icon: "" },
     PENDING: { text: "Chờ xác nhận", color: "yellow", icon: "⏱" },
-    CONFIRMED: { text: "Đã xác nhận", color: "blue", icon: "📦" },
-    PREPARING: { text: "Đang chuẩn bị", color: "blue", icon: "👨‍🍳" },
-    SHIPPING: { text: "Đang giao", color: "purple", icon: "🛵" },
-    DELIVERING: { text: "Đang giao", color: "purple", icon: "🛵" },
-    COMPLETED: { text: "Hoàn thành", color: "green", icon: "✅" },
-    CANCELLED: { text: "Đã hủy", color: "red", icon: "✕" },
+    CONFIRMED: { text: "Đã xác nhận", color: "blue", icon: "" },
+    PREPARING: { text: "Đang chuẩn bị", color: "blue", icon: "" },
+    SHIPPING: { text: "Đang giao", color: "purple", icon: "" },
+    DELIVERING: { text: "Đang giao", color: "purple", icon: "" },
+    COMPLETED: { text: "Hoàn thành", color: "green", icon: "" },
+    CANCELLED: { text: "Đã hủy", color: "red", icon: "" },
   };
 
   const tabs = [
@@ -48,9 +118,38 @@ function OrderHistoryPage() {
     try {
       setLoading(true);
       const data = await getMyOrders();
-      setOrders(Array.isArray(data) ? data : []);
+      const orderList = Array.isArray(data) ? data : [];
+
+      const resolvedOrders = await Promise.all(
+        orderList.map(async (order) => {
+          let fullOrder = order;
+          let items = getOrderItems(order);
+
+          // API lịch sử thường chỉ trả thông tin tóm tắt.
+          // Lấy chi tiết để có danh sách món và ảnh của món.
+          if (items.length === 0 && order.id) {
+            try {
+              fullOrder = await getOrderDetail(order.id);
+              items = getOrderItems(fullOrder);
+            } catch (error) {
+              console.warn("Không tải được chi tiết đơn hàng:", error);
+            }
+          }
+
+          const resolvedItems = await Promise.all(items.map(resolveItemFood));
+
+          return {
+            ...order,
+            ...fullOrder,
+            items: resolvedItems,
+          };
+        })
+      );
+
+      setOrders(resolvedOrders);
     } catch (error) {
       console.error("Lỗi tải lịch sử đơn hàng:", error);
+      setOrders([]);
     } finally {
       setLoading(false);
     }
@@ -79,15 +178,9 @@ function OrderHistoryPage() {
     return orders.filter((order) => order.status === status).length;
   };
 
-  const getFirstItem = (order) => {
-    const items = order.items || order.orderItems || [];
-    return items[0] || null;
-  };
+  const getFirstItem = (order) => getOrderItems(order)[0] || null;
 
-  const getItemsCount = (order) => {
-    const items = order.items || order.orderItems || [];
-    return items.length;
-  };
+  const getItemsCount = (order) => getOrderItems(order).length;
 
   const getShippingAddress = (order) =>
     order.shippingAddress || order.address || "Chưa có địa chỉ giao hàng";
@@ -126,6 +219,12 @@ function OrderHistoryPage() {
                   </button>
                 );
               })}
+            </div>
+
+            <div className="order-perks">
+              <span> Cập nhật trạng thái rõ ràng</span>
+              <span> Theo dõi quá trình giao món</span>
+              <span> Liên hệ hỗ trợ nhanh</span>
             </div>
           </div>
         </section>
@@ -180,8 +279,8 @@ function OrderCard({
   onViewDetail,
 }) {
   const extraItems = Math.max(itemsCount - 1, 0);
-  const image = firstItem?.foodImage || firstItem?.image || logo;
-  const name = firstItem?.foodName || firstItem?.name || "Đơn hàng FoodStack";
+  const image = getItemImage(firstItem);
+  const name = getItemName(firstItem);
   const quantity = firstItem?.quantity || 1;
 
   return (
@@ -203,12 +302,16 @@ function OrderCard({
 
       <div className="order-card-body">
         <div className="order-item-preview">
+          <div className="order-item-image-wrap">
+            <img src={image} alt={name} onError={(event) => { event.currentTarget.src = FOOD_PLACEHOLDER; }} />
+            <span>{quantity}</span>
+          </div>
 
           <div className="order-item-info">
             <h4>{name}</h4>
             <p>Số lượng: {quantity}</p>
             {extraItems > 0 && <b>+{extraItems} món khác</b>}
-            <div className="order-address">📍 {address}</div>
+            <div className="order-address">{address}</div>
           </div>
         </div>
 
@@ -221,14 +324,14 @@ function OrderCard({
 
         <div className="order-actions">
           <button type="button" className="primary-action" onClick={onViewDetail}>
-            👁 Xem chi tiết
+            Xem chi tiết
           </button>
           <button type="button" className="secondary-action">
-            ↻ Đặt lại
+             Đặt lại
           </button>
           {order.status === "COMPLETED" && (
             <button type="button" className="review-action">
-              💬 Đánh giá
+              Đánh giá
             </button>
           )}
         </div>
@@ -288,6 +391,7 @@ function EmptyState() {
 
 function OrderDetailModal({ order, getStatus, formatMoney, formatDate, onClose }) {
   const status = getStatus(order.status);
+  const items = getOrderItems(order);
 
   return (
     <div className="order-detail-overlay" onClick={onClose}>
@@ -318,11 +422,15 @@ function OrderDetailModal({ order, getStatus, formatMoney, formatDate, onClose }
 
           <h3>Sản phẩm đã đặt</h3>
           <div className="detail-items">
-            {order.items?.map((item) => (
-              <div className="detail-item" key={item.id}>
-                <img src={item.foodImage || logo} alt={item.foodName} />
+            {items.map((item, index) => (
+              <div className="detail-item" key={item.id || index}>
+                <img
+                  src={getItemImage(item)}
+                  alt={getItemName(item)}
+                  onError={(event) => { event.currentTarget.src = FOOD_PLACEHOLDER; }}
+                />
                 <div>
-                  <h4>{item.foodName}</h4>
+                  <h4>{getItemName(item)}</h4>
                   <p>Số lượng: {item.quantity}</p>
                   <p>Đơn giá: {formatMoney(item.unitPrice)}</p>
                 </div>

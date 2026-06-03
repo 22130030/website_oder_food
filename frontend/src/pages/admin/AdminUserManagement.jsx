@@ -142,7 +142,7 @@ const AdminUserManagement = () => {
   };
 
   return (
-    <AdminLayout title="👥 Quản lý người dùng">
+    <AdminLayout title="Quản lý người dùng">
       <div className="admin-toolbar card">
         <div className="toolbar-left">
           <input
@@ -174,7 +174,7 @@ const AdminUserManagement = () => {
         </div>
 
         <button className="btn btn-outline" onClick={loadUsers}>
-          🔄 Tải lại
+          Tải lại
         </button>
       </div>
 
@@ -232,7 +232,7 @@ const AdminUserManagement = () => {
                         className={`toggle-btn ${user.isActive ? 'available' : 'unavailable'}`}
                         onClick={() => handleToggleActive(user.id)}
                       >
-                        {user.isActive ? '✅ Active' : '❌ Khóa'}
+                        {user.isActive ? 'Active' : 'Khóa'}
                       </button>
                     </td>
                     <td>
@@ -241,7 +241,7 @@ const AdminUserManagement = () => {
                           className="btn btn-outline btn-sm"
                           onClick={() => openEdit(user)}
                         >
-                          ✏️ Sửa
+                          Sửa
                         </button>
                       </div>
                     </td>
@@ -269,7 +269,7 @@ const AdminUserManagement = () => {
         <div className="modal-overlay" onClick={closeModal}>
           <div className="modal-box card" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
-              <h3>✏️ Chỉnh sửa người dùng</h3>
+              <h3>Chỉnh sửa người dùng</h3>
               <button className="modal-close" onClick={closeModal}>✕</button>
             </div>
 
@@ -351,7 +351,7 @@ const AdminUserManagement = () => {
                   Hủy
                 </button>
                 <button type="submit" className="btn btn-primary">
-                  💾 Lưu thay đổi
+                  Lưu thay đổi
                 </button>
               </div>
             </form>

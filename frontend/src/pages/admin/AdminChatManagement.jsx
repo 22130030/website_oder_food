@@ -279,7 +279,7 @@ const AdminChatManagement = () => {
     conversations.reduce((sum, conv) => sum + Number(conv.unreadCount || 0), 0);
 
   return (
-    <AdminLayout title="💬 Quản lý Chat">
+    <AdminLayout title="Quản lý Chat">
       <div className="admin-chat-layout card">
 
         <div className="conv-list">

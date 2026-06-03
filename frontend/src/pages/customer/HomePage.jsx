@@ -116,6 +116,7 @@ const HomePage = () => {
         <div className="hero-inner">
           <div className="hero-content">
             <div className="hero-text">
+              <span className="hero-eyebrow">Giao nhanh · Món tươi · Đặt dễ dàng</span>
               <h1>
                 Đặt món ngon dễ dàng cùng{' '}
                 <span>NLU FoodStack</span>
@@ -137,12 +138,18 @@ const HomePage = () => {
 
               <div className="hero-actions">
                 <button type="button" className="hero-primary-btn" onClick={() => navigate('/menu')}>
-                  Đặt món ngay <span>›</span>
+                  Đặt món ngay
                 </button>
 
                 <Link to="/menu" className="hero-outline-btn">
                   Xem thực đơn
                 </Link>
+              </div>
+
+              <div className="hero-proof">
+                <span>⭐ 4.8/5 đánh giá</span>
+                <span>Giao nhanh 30 phút</span>
+                <span>🎁 Ưu đãi mỗi ngày</span>
               </div>
             </div>
 
@@ -177,9 +184,24 @@ const HomePage = () => {
         </div>
       </section>
 
-      <section className="category-section">
+      <section className="benefit-section">
+        <div className="home-inner benefit-grid">
+          <div className="benefit-card"><span>🛵</span><div><strong>Giao hàng nhanh</strong><p>Nhận món nóng trong khoảng 30 phút</p></div></div>
+          <div className="benefit-card"><span>🥗</span><div><strong>Nguyên liệu tươi</strong><p>Lựa chọn món ngon mỗi ngày</p></div></div>
+          <div className="benefit-card"><span>💳</span><div><strong>Thanh toán tiện lợi</strong><p>COD hoặc VNPAY an toàn</p></div></div>
+          <div className="benefit-card"><span>💬</span><div><strong>Hỗ trợ tận tâm</strong><p>Luôn sẵn sàng giải đáp</p></div></div>
+        </div>
+      </section>
+
+      <section className="category-section modern-home-section category-modern-section">
+        <div className="modern-section-art category-art" aria-hidden="true">
+          <span className="art-blob" />
+          <span className="art-dots" />
+          <span className="art-ring" />
+        </div>
         <div className="home-inner">
           <div className="category-heading">
+            <span className="home-section-eyebrow">Khám phá theo khẩu vị</span>
             <h2>Danh mục món ăn</h2>
             <p>Khám phá đa dạng món ăn từ nhiều ẩm thực</p>
           </div>
@@ -217,10 +239,18 @@ const HomePage = () => {
         </div>
       </section>
 
-      <section className="home-section">
+      <section className="home-section modern-home-section featured-modern-section">
+        <div className="modern-section-art featured-art" aria-hidden="true">
+          <span className="art-blob" />
+          <span className="art-dots" />
+          <span className="art-line" />
+        </div>
         <div className="home-inner">
-          <div className="section-header">
-            <h2>🔥 Món ăn nổi bật</h2>
+          <div className="section-header featured-section-header">
+            <div>
+              <span className="home-section-eyebrow">Best seller hôm nay</span>
+              <h2>🔥 Món ăn nổi bật</h2>
+            </div>
 
             <Link to="/menu" className="see-all">
               Xem tất cả
@@ -251,10 +281,16 @@ const HomePage = () => {
         </div>
       </section>
 
-      <section className="cta-section">
+      <section className="cta-section modern-home-section cta-modern-section">
         <div className="home-inner">
           <div className="cta-card">
+            <div className="cta-art" aria-hidden="true">
+              <span className="cta-ring cta-ring-one" />
+              <span className="cta-ring cta-ring-two" />
+              <span className="cta-dot-grid" />
+            </div>
             <div className="cta-content">
+              <span className="cta-badge">Ưu đãi giao tận nơi</span>
               <h2>Sẵn sàng thưởng thức món ngon?</h2>
               <p>Khám phá thực đơn phong phú, ưu đãi hấp dẫn và giao hàng nhanh chóng tới tận nơi.</p>
 
@@ -263,7 +299,7 @@ const HomePage = () => {
                   Xem thực đơn
                 </Link>
 
-                <Link to="/chat" className="btn" style={{ background: 'transparent', color: 'var(--primary)', border: '2px solid rgba(231,76,60,0.12)' }}>
+                <Link to="/chat" className="btn cta-support-btn">
                   Liên hệ hỗ trợ
                 </Link>
               </div>

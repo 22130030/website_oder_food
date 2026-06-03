@@ -268,7 +268,7 @@ const AdminFoodManagement = () => {
   };
 
   return (
-    <AdminLayout title="🍔 Quản lý món ăn">
+    <AdminLayout title="Quản lý món ăn">
       <div className="admin-toolbar card">
         <div className="toolbar-left">
           <input
@@ -293,7 +293,7 @@ const AdminFoodManagement = () => {
         </div>
 
         <button className="btn btn-primary" onClick={openAdd}>
-          ➕ Thêm món mới
+          Thêm món mới
         </button>
       </div>
 
@@ -347,7 +347,7 @@ const AdminFoodManagement = () => {
                         className={`toggle-btn ${food.isAvailable ? 'available' : 'unavailable'}`}
                         onClick={() => toggleAvailable(food.id)}
                       >
-                        {food.isAvailable ? '✅ Còn món' : '❌ Hết món'}
+                        {food.isAvailable ? 'Còn món' : 'Hết món'}
                       </button>
                     </td>
                     <td>
@@ -356,14 +356,14 @@ const AdminFoodManagement = () => {
                           className="btn btn-outline btn-sm"
                           onClick={() => openEdit(food)}
                         >
-                          ✏️ Sửa
+                          Sửa
                         </button>
 
                         <button
                           className="btn btn-danger btn-sm"
                           onClick={() => setDeleteConfirm(food.id)}
                         >
-                          🗑️ Xóa
+                          Xóa
                         </button>
                       </div>
                     </td>
@@ -391,7 +391,7 @@ const AdminFoodManagement = () => {
         <div className="modal-overlay" onClick={closeModal}>
           <div className="modal-box card" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
-              <h3>{editFood ? '✏️ Chỉnh sửa món ăn' : '➕ Thêm món mới'}</h3>
+              <h3>{editFood ? 'Chỉnh sửa món ăn' : 'Thêm món mới'}</h3>
               <button className="modal-close" onClick={closeModal}>
                 ✕
               </button>
@@ -539,12 +539,12 @@ const AdminFoodManagement = () => {
                   disabled={saving || uploadingImage}
                 >
                   {uploadingImage
-                    ? '⏳ Đang upload ảnh...'
+                    ? 'Đang upload ảnh...'
                     : saving
-                    ? '⏳ Đang lưu...'
+                    ? 'Đang lưu...'
                     : editFood
-                    ? '💾 Lưu thay đổi'
-                    : '➕ Thêm món'}
+                    ? 'Lưu thay đổi'
+                    : 'Thêm món'}
                 </button>
               </div>
             </form>
@@ -583,7 +583,7 @@ const AdminFoodManagement = () => {
                   className="btn btn-danger"
                   onClick={() => handleDelete(deleteConfirm)}
                 >
-                  🗑️ Xóa
+                  Xóa
                 </button>
               </div>
             </div>

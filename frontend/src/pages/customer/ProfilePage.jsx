@@ -253,8 +253,8 @@ const ProfilePage = () => {
   };
 
   const TABS = [
-    { id: 'profile', icon: '👤', label: 'Thông tin cá nhân' },
-    { id: 'password', icon: '🔐', label: 'Đổi mật khẩu' },
+    { id: 'profile', icon: '', label: 'Thông tin cá nhân' },
+    { id: 'password', icon: '', label: 'Đổi mật khẩu' },
   ];
 
   return (
@@ -263,6 +263,19 @@ const ProfilePage = () => {
 
       <div className="profile-page">
         <div className="inner">
+          <section className="profile-hero">
+            <div>
+              <span className="profile-kicker">TÀI KHOẢN CỦA TÔI</span>
+              <h1>Thông tin cá nhân</h1>
+              <p>Cập nhật hồ sơ để đặt món nhanh hơn và bảo vệ tài khoản của bạn.</p>
+            </div>
+            <div className="profile-benefits">
+              <span>Bảo mật</span>
+              <span>Giao nhận tiện lợi</span>
+              <span>Hỗ trợ nhanh</span>
+            </div>
+          </section>
+
           <div className="profile-layout">
             <div className="profile-sidebar card">
               <div className="profile-avatar-section">
@@ -297,7 +310,7 @@ const ProfilePage = () => {
                     cursor: 'pointer',
                   }}
                 >
-                  📷 Chọn ảnh từ máy tính
+                  Chọn ảnh từ máy tính
                 </label>
 
                 <input
@@ -337,7 +350,7 @@ const ProfilePage = () => {
             <div className="profile-content card">
               {activeTab === 'profile' && (
                 <>
-                  <h2>👤 Thông tin cá nhân</h2>
+                  <h2>Thông tin cá nhân</h2>
 
                   <form onSubmit={handleProfileSubmit}>
                     <div className="grid-2">
@@ -380,15 +393,20 @@ const ProfilePage = () => {
                       className="btn btn-primary"
                       disabled={loading}
                     >
-                      {loading ? '⏳ Đang lưu...' : '💾 Lưu thay đổi'}
+                      {loading ? 'Đang lưu...' : 'Lưu thay đổi'}
                     </button>
                   </form>
+
+                  <div className="profile-tips">
+                    <div><span>📍</span><p><strong>Thông tin chính xác</strong><small>Giúp cửa hàng liên hệ và giao món thuận lợi.</small></p></div>
+                    <div><span>🛡️</span><p><strong>Dữ liệu an toàn</strong><small>Email tài khoản không thể tự ý thay đổi.</small></p></div>
+                  </div>
                 </>
               )}
 
               {activeTab === 'password' && (
                 <>
-                  <h2>🔐 Đổi mật khẩu</h2>
+                  <h2>Đổi mật khẩu</h2>
 
                   <form onSubmit={handlePwSubmit} style={{ maxWidth: 400 }}>
                     <div className="form-group">
@@ -441,9 +459,13 @@ const ProfilePage = () => {
                       className="btn btn-primary"
                       disabled={loading}
                     >
-                      {loading ? '⏳ Đang đổi...' : '🔑 Đổi mật khẩu'}
+                      {loading ? 'Đang đổi...' : 'Đổi mật khẩu'}
                     </button>
                   </form>
+
+                  <div className="security-note">
+                    Mật khẩu mới nên có ít nhất 6 ký tự và không chia sẻ với người khác.
+                  </div>
                 </>
               )}
             </div>

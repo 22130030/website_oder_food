@@ -1,156 +1,155 @@
 .food-card {
-  display: block;
-  text-decoration: none !important;
-  color: inherit;
-  background: white;
-  border-radius: 16px;
-  overflow: hidden;
-  box-shadow: var(--shadow);
-  transition: transform 0.25s ease, box-shadow 0.25s ease;
+  position: relative;
+  display: flex;
+  flex-direction: column;
   height: 100%;
+  overflow: hidden;
+  color: inherit;
+  background: #fff;
+  border: 1px solid #f0e6df;
+  border-radius: 22px;
+  box-shadow: 0 10px 30px rgba(44, 27, 17, 0.055);
+  transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
 }
 
 .food-card:hover {
-  transform: translateY(-6px);
-  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.15);
-  text-decoration: none !important;
+  transform: translateY(-7px);
+  border-color: rgba(244, 81, 57, 0.22);
+  box-shadow: 0 22px 48px rgba(47, 27, 16, 0.13);
 }
 
-/* ==================== HÌNH ẢNH ==================== */
 .food-card-image {
   position: relative;
-  height: 200px;
+  height: 205px;
   overflow: hidden;
+  background: #f4f1ed;
+}
+
+.food-card-image::after {
+  content: "";
+  position: absolute;
+  inset: auto 0 0;
+  height: 42%;
+  background: linear-gradient(transparent, rgba(0,0,0,.18));
+  pointer-events: none;
 }
 
 .food-card-image img {
+  display: block;
   width: 100%;
   height: 100%;
   object-fit: cover;
-  transition: transform 0.4s ease;
+  transition: transform .45s ease;
 }
 
-.food-card:hover .food-card-image img {
-  transform: scale(1.08);
-}
+.food-card:hover .food-card-image img { transform: scale(1.065); }
 
 .sold-out-badge {
   position: absolute;
   inset: 0;
-  background: rgba(0, 0, 0, 0.6);
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  z-index: 3;
+  background: rgba(22, 25, 31, .62);
   color: white;
-  font-size: 17px;
-  font-weight: 700;
+  display: grid;
+  place-items: center;
+  font-size: 16px;
+  font-weight: 800;
 }
 
 .category-tag {
   position: absolute;
-  top: 12px;
-  right: 12px;
-  background: var(--primary);
-  color: white;
-  padding: 4px 12px;
-  border-radius: 20px;
-  font-size: 12px;
-  font-weight: 600;
   z-index: 2;
+  top: 13px;
+  left: 13px;
+  max-width: calc(100% - 26px);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  padding: 6px 11px;
+  border-radius: 999px;
+  background: rgba(255,255,255,.95);
+  color: var(--primary);
+  font-size: 12px;
+  font-weight: 750;
+  box-shadow: 0 5px 16px rgba(0,0,0,.08);
 }
 
-/* ==================== NỘI DUNG ==================== */
 .food-card-body {
-  padding: 18px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 17px 17px 16px;
 }
 
 .food-name {
+  color: #172133;
   font-size: 17px;
-  font-weight: 700;
-  margin-bottom: 8px;
+  font-weight: 760;
+  margin: 0 0 7px;
   line-height: 1.4;
   display: -webkit-box;
-  -webkit-line-clamp: 2;
+  -webkit-line-clamp: 1;
   -webkit-box-orient: vertical;
   overflow: hidden;
-  text-decoration: none !important;
-  color: #222;
 }
 
 .food-desc {
+  min-height: 41px;
+  color: #718096;
   font-size: 13.5px;
-  color: #777;
-  margin-bottom: 12px;
+  margin: 0 0 10px;
+  line-height: 1.52;
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
-  line-height: 1.5;
 }
 
 .food-rating {
-  font-size: 13.5px;
-  color: #f39c12;
+  width: fit-content;
   margin-bottom: 14px;
+  padding: 5px 9px;
+  border-radius: 999px;
+  background: #fff8e8;
+  color: #e59100;
+  font-size: 12.5px;
+  font-weight: 650;
 }
 
 .food-card-footer {
   display: flex;
-  align-items: center;
+  gap: 8px;
   justify-content: space-between;
-  margin-top: 8px;
+  align-items: center;
+  margin-top: auto;
 }
 
 .food-price {
-  font-size: 18px;
-  font-weight: 800;
   color: var(--primary);
+  font-size: 19px;
+  font-weight: 850;
 }
 
 .add-cart-btn {
-  border-radius: 25px !important;
-  padding: 8px 18px;
-  font-size: 14px;
-  font-weight: 600;
-  transition: all 0.3s ease;
+  min-height: 38px;
+  padding: 8px 13px;
+  border-radius: 999px;
+  font-size: 13px;
+  box-shadow: none;
 }
 
-.add-cart-btn:hover:not(:disabled) {
-  transform: scale(1.05);
-}
+.add-cart-btn:hover:not(:disabled) { transform: scale(1.04); }
 
 .add-cart-btn.added {
-  background-color: #27ae60 !important;
-  border-color: #27ae60 !important;
-  animation: pulse-success 0.5s ease;
-}
-
-@keyframes pulse-success {
-  0% {
-    transform: scale(1);
-  }
-  50% {
-    transform: scale(1.1);
-  }
-  100% {
-    transform: scale(1);
-  }
-}
-
-/* ==================== ACCESSIBILITY ==================== */
-
-/* Đảm bảo không có gạch chân nào */
-.food-card,
-.food-name,
-.food-card a {
-  text-decoration: none !important;
-}
-
-.food-card:hover .food-name {
-  color: var(--primary);
+  background: var(--success) !important;
+  animation: pulse-success .45s ease;
 }
 
 .add-cart-btn:disabled {
-  opacity: 0.6;
+  opacity: .55;
   cursor: not-allowed;
+}
+
+@keyframes pulse-success {
+  50% { transform: scale(1.08); }
 }

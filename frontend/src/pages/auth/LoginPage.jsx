@@ -97,55 +97,97 @@ const LoginPage = () => {
   };
 
   return (
-    <div className="auth-page">
+    <div className="auth-page auth-login-page">
       <div className="auth-left">
+        <div className="auth-left-decor auth-left-decor-one" />
+        <div className="auth-left-decor auth-left-decor-two" />
+
         <div className="auth-hero">
-          <div className="auth-hero-icon">🍔</div>
-          <h1>NLU-FoodStack</h1>
-          <p>Đặt đồ ăn ngon, giao hàng nhanh chóng tận nơi!</p>
+          <span className="auth-brand-badge">🍔 NLU-FoodStack</span>
+          <span className="auth-kicker">Đăng nhập để đặt món nhanh hơn</span>
+          <h1>Thưởng thức món ngon chỉ với vài bước đơn giản</h1>
+          <p>
+            Đăng nhập để theo dõi đơn hàng, lưu địa chỉ giao hàng và nhận ưu đãi hấp dẫn mỗi ngày.
+          </p>
+
+          <div className="auth-highlight-grid">
+            <div className="auth-highlight-card">
+              <strong>30 phút</strong>
+              <span>Giao nhanh tận nơi</span>
+            </div>
+            <div className="auth-highlight-card">
+              <strong>200+</strong>
+              <span>Món ăn hấp dẫn</span>
+            </div>
+            <div className="auth-highlight-card">
+              <strong>4.8★</strong>
+              <span>Khách hàng yêu thích</span>
+            </div>
+          </div>
+
+          <div className="auth-features">
+            <div className="feature-item">✅ Đặt món nhanh, giao hàng tiện lợi</div>
+            <div className="feature-item">🎁 Nhận ưu đãi dành riêng cho thành viên</div>
+            <div className="feature-item">🔒 Thanh toán an toàn, bảo mật</div>
+            <div className="feature-item">💬 Hỗ trợ 24/7 khi bạn cần</div>
+          </div>
         </div>
       </div>
 
       <div className="auth-right">
         <div className="auth-form-container">
-          <h2>Đăng nhập</h2>
-          <p className="auth-subtitle">Chào mừng bạn quay lại!</p>
+          <div className="auth-panel-top">
+            <span className="auth-form-badge">Chào mừng quay lại</span>
+            <h2>Đăng nhập</h2>
+            <p className="auth-subtitle">Nhập thông tin của bạn để tiếp tục đặt món.</p>
+          </div>
 
           {error && <div className="alert alert-error">❌ {error}</div>}
 
           <form onSubmit={handleSubmit}>
             <div className="form-group">
               <label>Email</label>
-              <input
-                type="email"
-                name="email"
-                placeholder="example@email.com"
-                value={form.email}
-                onChange={handleChange}
-                required
-              />
+              <div className="input-shell">
+                <span className="input-icon">✉️</span>
+                <input
+                  type="email"
+                  name="email"
+                  placeholder="example@email.com"
+                  value={form.email}
+                  onChange={handleChange}
+                  required
+                />
+              </div>
             </div>
 
             <div className="form-group">
               <label>Mật khẩu</label>
-              <input
-                type="password"
-                name="password"
-                placeholder="Nhập mật khẩu"
-                value={form.password}
-                onChange={handleChange}
-                required
-              />
+              <div className="input-shell">
+                <span className="input-icon">🔒</span>
+                <input
+                  type="password"
+                  name="password"
+                  placeholder="Nhập mật khẩu"
+                  value={form.password}
+                  onChange={handleChange}
+                  required
+                />
+              </div>
             </div>
 
-            <button type="submit" className="btn btn-primary btn-full" disabled={loading}>
-              {loading ? '⏳ Đang đăng nhập...' : '🚀 Đăng nhập'}
+            <div className="auth-inline-row">
+              <Link to="/forgot-password" className="link-primary">
+                Quên mật khẩu?
+              </Link>
+            </div>
+
+            <button type="submit" className="btn btn-primary btn-full auth-submit-btn" disabled={loading}>
+              {loading ? 'Đang đăng nhập...' : 'Đăng nhập ngay'}
             </button>
           </form>
 
-          <div className="auth-divider"><span>hoặc</span></div>
+          <div className="auth-divider"><span>hoặc tiếp tục với</span></div>
 
-          {/* Nút đăng nhập Google */}
           <div className="google-login-wrapper">
             <GoogleLogin
               onSuccess={handleGoogleSuccess}
@@ -158,9 +200,10 @@ const LoginPage = () => {
             />
           </div>
 
-          <p className="auth-switch" style={{ marginTop: '16px' }}>
-            Chưa có tài khoản? <Link to="/register" className="link-primary">Đăng ký ngay</Link>
-          </p>
+          <div className="auth-bottom-note">
+            <span>Chưa có tài khoản?</span>
+            <Link to="/register" className="link-primary">Đăng ký ngay</Link>
+          </div>
         </div>
       </div>
     </div>

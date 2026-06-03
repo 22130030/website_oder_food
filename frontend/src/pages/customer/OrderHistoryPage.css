@@ -561,3 +561,24 @@
     width: 100%;
   }
 }
+
+.order-perks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 15px;
+}
+
+.order-perks span {
+  padding: 10px 14px;
+  border-radius: 999px;
+  color: #667085;
+  background: #ffffff;
+  border: 1px solid #ece5df;
+  font-size: 13px;
+  font-weight: 650;
+}
+
+@media (max-width: 600px) {
+  .order-perks { display: none; }
+}

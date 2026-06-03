@@ -226,93 +226,132 @@ const ChatPage = () => {
     <div className="page-wrapper">
       <Navbar />
 
-      <div className="chat-page">
+      <main className="chat-page">
         <div className="inner">
-          <div className="chat-container card">
+          <header className="support-heading">
+            <span className="support-kicker">TRUNG TÂM HỖ TRỢ</span>
+            <h1>Chúng tôi luôn sẵn sàng giúp bạn</h1>
+            <p>Trao đổi trực tiếp với cửa hàng về món ăn, thanh toán hoặc tình trạng giao hàng.</p>
+          </header>
 
-            <div className="chat-header">
-              <div className="chat-avatar">🍔</div>
-              <div className="chat-info">
-                <h3>NLU-FoodStack Hỗ trợ</h3>
-                <div className="online-status">
-                  <span className="online-dot">●</span> Đang hoạt động
+          <div className="support-layout">
+            <aside className="support-sidebar">
+              <div className="support-card support-highlight">
+                <div className="support-icon">🎧</div>
+                <h3>Hỗ trợ nhanh</h3>
+                <p>Nhân viên trực tuyến để phản hồi thắc mắc của bạn trong thời gian sớm nhất.</p>
+                <span className="support-online"><i /> Đang hoạt động</span>
+              </div>
+
+              <div className="support-card">
+                <h3>Câu hỏi thường gặp</h3>
+                <div className="faq-shortcuts">
+                  <button type="button" onClick={() => setInputText('Đơn hàng của tôi đang ở đâu?')}>Tình trạng đơn hàng</button>
+                  <button type="button" onClick={() => setInputText('Tôi cần hỗ trợ thanh toán.')}>Hỗ trợ thanh toán</button>
+                  <button type="button" onClick={() => setInputText('Tôi muốn thay đổi địa chỉ giao hàng.')}>Đổi địa chỉ nhận món</button>
                 </div>
               </div>
-            </div>
 
-            <div className="chat-messages">
-              {messages.map((msg, index) => {
-                const myId = user?.userId || user?.id;
-                const isMine = msg.senderId === myId;
-                const isImage = msg.messageType === 'IMAGE' && msg.imageUrl;
+              <div className="support-card support-hours">
+                <strong>Thời gian phục vụ</strong>
+                <p>07:00 - 22:00 · Mỗi ngày</p>
+              </div>
+            </aside>
 
-                return (
-                  <React.Fragment key={msg.id}>
-                    {shouldShowDateLabel(messages, index) && (
-                      <div className="chat-date-label">
-                        {formatDateLabel(msg.sentAt)}
+            <div className="chat-container card">
+              <div className="chat-header">
+                <div className="chat-avatar">🍔</div>
+                <div className="chat-info">
+                  <h3>NLU-FoodStack Hỗ trợ</h3>
+                  <div className="online-status">
+                    <span className="online-dot">●</span> Đang hoạt động
+                  </div>
+                </div>
+                <span className="secure-chat">🔒 Riêng tư</span>
+              </div>
+
+              <div className="chat-messages">
+                {messages.length === 0 && (
+                  <div className="chat-welcome">
+                    <span>👋</span>
+                    <h4>Xin chào! Bạn cần hỗ trợ gì?</h4>
+                    <p>Gửi tin nhắn hoặc chọn câu hỏi gợi ý bên trái để bắt đầu.</p>
+                  </div>
+                )}
+
+                {messages.map((msg, index) => {
+                  const myId = user?.userId || user?.id;
+                  const isMine = msg.senderId === myId;
+                  const isImage = msg.messageType === 'IMAGE' && msg.imageUrl;
+
+                  return (
+                    <React.Fragment key={msg.id}>
+                      {shouldShowDateLabel(messages, index) && (
+                        <div className="chat-date-label">
+                          {formatDateLabel(msg.sentAt)}
+                        </div>
+                      )}
+
+                      <div className={`msg-wrap ${isMine ? 'sent' : 'received'}`}>
+                        {!isMine && <div className="msg-avatar">🤵</div>}
+
+                        <div className={`msg-bubble ${isImage ? 'image-bubble' : ''}`}>
+                          {isImage ? (
+                            <img
+                              src={getImageSrc(msg.imageUrl)}
+                              alt="chat"
+                              className="chat-image"
+                            />
+                          ) : (
+                            <p>{msg.content}</p>
+                          )}
+
+                          <span className="msg-time">
+                            {formatTime(msg.sentAt)}
+                          </span>
+                        </div>
                       </div>
-                    )}
+                    </React.Fragment>
+                  );
+                })}
 
-                    <div className={`msg-wrap ${isMine ? 'sent' : 'received'}`}>
-                      {!isMine && <div className="msg-avatar">🤵</div>}
+                <div ref={messagesEndRef} />
+              </div>
 
-                      <div className={`msg-bubble ${isImage ? 'image-bubble' : ''}`}>
-                        {isImage ? (
-                          <img
-                            src={getImageSrc(msg.imageUrl)}
-                            alt="chat"
-                            className="chat-image"
-                          />
-                        ) : (
-                          <p>{msg.content}</p>
-                        )}
+              <div className="chat-input-area">
+                <input
+                  type="file"
+                  accept="image/*"
+                  id="chat-image-upload-user"
+                  style={{ display: 'none' }}
+                  onChange={handleImageChange}
+                />
 
-                        <span className="msg-time">
-                          {formatTime(msg.sentAt)}
-                        </span>
-                      </div>
-                    </div>
-                  </React.Fragment>
-                );
-              })}
+                <label htmlFor="chat-image-upload-user" className="image-upload-btn" title="Gửi hình ảnh">
+                  📷
+                </label>
 
-              <div ref={messagesEndRef} />
+                <textarea
+                  value={inputText}
+                  onChange={(e) => setInputText(e.target.value)}
+                  onKeyDown={handleKeyDown}
+                  placeholder="Nhập tin nhắn... Enter để gửi"
+                  rows={1}
+                />
+
+                <button
+                  className="send-btn"
+                  onClick={sendMessage}
+                  disabled={!inputText.trim()}
+                  title="Gửi tin nhắn"
+                >
+                  ➤
+                </button>
+              </div>
             </div>
-
-            <div className="chat-input-area">
-              <input
-                type="file"
-                accept="image/*"
-                id="chat-image-upload-user"
-                style={{ display: 'none' }}
-                onChange={handleImageChange}
-              />
-
-              <label htmlFor="chat-image-upload-user" className="image-upload-btn">
-                📷
-              </label>
-
-              <textarea
-                value={inputText}
-                onChange={(e) => setInputText(e.target.value)}
-                onKeyDown={handleKeyDown}
-                placeholder="Nhập tin nhắn... Enter để gửi"
-                rows={1}
-              />
-
-              <button
-                className="send-btn"
-                onClick={sendMessage}
-                disabled={!inputText.trim()}
-              >
-                ➤
-              </button>
-            </div>
-
           </div>
         </div>
-      </div>
+      </main>
 
       <Footer />
     </div>
