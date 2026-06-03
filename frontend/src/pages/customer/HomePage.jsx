@@ -2,15 +2,12 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import Navbar from '../../components/common/Navbar';
 import Footer from '../../components/common/Footer';
-import { useCart } from '../../context/CartContext';
 import { foodAPI } from '../../services/api';
 import './HomePage.css';
 import FoodCard from '../../components/customer/FoodCard';
 
 const HomePage = () => {
   const navigate = useNavigate();
-  const { addToCart } = useCart();
-
   const [categories, setCategories] = useState([]);
   const [featuredFoods, setFeaturedFoods] = useState([]);
   const [keyword, setKeyword] = useState('');
@@ -20,11 +17,42 @@ const HomePage = () => {
     name: category.name ?? category.categoryName,
   });
 
-  const getImageSrc = (imageUrl) => {
-    if (!imageUrl) return '/placeholder-food.png';
-    if (imageUrl.startsWith('http')) return imageUrl;
-    return `http://localhost:8080${imageUrl}`;
-  };
+  const categoryDesigns = [
+    {
+      description: 'Cơm phần, cơm tấm, cơm gà...',
+      image: 'https://images.unsplash.com/photo-1665199020996-66cfdf8cba00?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=400',
+    },
+    {
+      description: 'Phở, bún bò, mì xào...',
+      image: 'https://images.unsplash.com/photo-1597345637412-9fd611e758f3?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=400',
+    },
+    {
+      description: 'Gà rán giòn, gà sốt cay...',
+      image: 'https://images.unsplash.com/photo-1569058242253-92a9c755a0ec?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=400',
+    },
+    {
+      description: 'Pizza Ý, pizza hải sản...',
+      image: 'https://images.unsplash.com/photo-1513104890138-7c749659a591?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=400',
+    },
+    {
+      description: 'Burger bò, burger gà...',
+      image: 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=400',
+    },
+    {
+      description: 'Trà sữa, nước ép, sinh tố...',
+      image: 'https://images.unsplash.com/photo-1603569283847-aa295f0d016a?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=400',
+    },
+    {
+      description: 'Bánh ngọt, kem, chè...',
+      image: 'https://images.unsplash.com/photo-1530648672449-81f6c723e2f1?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=400',
+    },
+    {
+      description: 'Món chay thanh đạm, bổ dưỡng',
+      image: 'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=400',
+    },
+  ];
+
+  const getCategoryDesign = (index) => categoryDesigns[index % categoryDesigns.length];
 
   const loadCategories = useCallback(async () => {
     try {
@@ -35,7 +63,7 @@ const HomePage = () => {
       const normalized = data
         .map(normalizeCategory)
         .filter(category => category.id && category.name)
-        .slice(0, 5);
+        .slice(0, 8);
 
       setCategories(normalized);
     } catch (err) {
@@ -89,61 +117,71 @@ const HomePage = () => {
           <div className="hero-content">
             <div className="hero-text">
               <h1>
-                Đặt đồ ăn ngon <br />
-                <span>Giao nhanh tận nơi</span>
+                Đặt món ngon dễ dàng cùng{' '}
+                <span>NLU FoodStack</span>
               </h1>
 
               <p>
-                NLU-FoodStack giúp bạn dễ dàng tìm kiếm, chọn món và đặt món ăn yêu thích
-                chỉ trong vài phút.
+                Khám phá hàng trăm món ăn hấp dẫn, đặt hàng nhanh chóng và giao tận nơi.
               </p>
 
               <form className="hero-search" onSubmit={handleSearch}>
+                <span className="hero-search-icon">🔎</span>
                 <input
                   type="text"
-                  placeholder="Bạn muốn ăn món gì hôm nay?"
+                  placeholder="Tìm món ăn yêu thích..."
                   value={keyword}
                   onChange={(e) => setKeyword(e.target.value)}
                 />
-
-                <button type="submit" className="btn btn-primary">
-                  Tìm kiếm
-                </button>
               </form>
 
-              <div className="hero-stats">
-                <div className="stat-item">
-                  <strong>200+</strong>
-                  <span>Món ăn</span>
-                </div>
+              <div className="hero-actions">
+                <button type="button" className="hero-primary-btn" onClick={() => navigate('/menu')}>
+                  Đặt món ngay <span>›</span>
+                </button>
 
-                <div className="stat-item">
-                  <strong>30 phút</strong>
-                  <span>Giao hàng</span>
-                </div>
-
-                <div className="stat-item">
-                  <strong>4.8★</strong>
-                  <span>Đánh giá</span>
-                </div>
+                <Link to="/menu" className="hero-outline-btn">
+                  Xem thực đơn
+                </Link>
               </div>
             </div>
 
-            <div className="hero-image">
-              <div className="hero-emoji">🍔</div>
+            <div className="hero-showcase">
+              <div className="hero-food-grid">
+                <div className="hero-food-card">
+                  <img
+                    src="https://images.unsplash.com/photo-1547592180-85f173990554?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=400"
+                    alt="Món salad tươi"
+                  />
+                  <div>
+                    <h3>Salad tươi</h3>
+                    <strong>99.000đ</strong>
+                  </div>
+                </div>
+
+                <div className="hero-food-card hero-food-card-offset">
+                  <img
+                    src="https://images.unsplash.com/photo-1494859802809-d069c3b71a8a?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=400"
+                    alt="Món cơm trộn"
+                  />
+                  <div>
+                    <h3>Cơm trộn</h3>
+                    <strong>75.000đ</strong>
+                  </div>
+                </div>
+              </div>
+
+              <div className="hero-sale-badge">Giảm 30%</div>
             </div>
           </div>
         </div>
       </section>
 
-      <section className="home-section">
+      <section className="category-section">
         <div className="home-inner">
-          <div className="section-header">
-            <h2>📁 Danh mục món ăn</h2>
-
-            <Link to="/menu" className="see-all">
-              Xem tất cả
-            </Link>
+          <div className="category-heading">
+            <h2>Danh mục món ăn</h2>
+            <p>Khám phá đa dạng món ăn từ nhiều ẩm thực</p>
           </div>
 
           <div className="categories-grid">
@@ -152,17 +190,28 @@ const HomePage = () => {
                 Chưa có danh mục món ăn.
               </div>
             ) : (
-              categories.map(category => (
-                <button
-                  type="button"
-                  key={category.id}
-                  className="category-card"
-                  onClick={() => goToCategory(category.id)}
-                >
-                  <span className="cat-icon">🍽️</span>
-                  <span>{category.name}</span>
-                </button>
-              ))
+              categories.map((category, index) => {
+                const design = getCategoryDesign(index);
+
+                return (
+                  <button
+                    type="button"
+                    key={category.id}
+                    className="category-card"
+                    onClick={() => goToCategory(category.id)}
+                  >
+                    <div className="category-image-wrap">
+                      <img src={design.image} alt={category.name} />
+                      <span className="category-overlay" />
+                    </div>
+
+                    <div className="category-info">
+                      <h3>{category.name}</h3>
+                      <p>{design.description}</p>
+                    </div>
+                  </button>
+                );
+              })
             )}
           </div>
         </div>
@@ -203,18 +252,26 @@ const HomePage = () => {
       </section>
 
       <section className="cta-section">
-        <div className="home-inner" style={{ textAlign: 'center' }}>
-          <h2>Sẵn sàng đặt món?</h2>
-          <p>Khám phá thực đơn phong phú và đặt món ngay hôm nay.</p>
+        <div className="home-inner">
+          <div className="cta-card">
+            <div className="cta-content">
+              <h2>Sẵn sàng thưởng thức món ngon?</h2>
+              <p>Khám phá thực đơn phong phú, ưu đãi hấp dẫn và giao hàng nhanh chóng tới tận nơi.</p>
 
-          <div className="cta-buttons">
-            <Link to="/menu" className="btn btn-primary">
-              Xem thực đơn
-            </Link>
+              <div className="cta-buttons">
+                <Link to="/menu" className="btn btn-primary">
+                  Xem thực đơn
+                </Link>
 
-            <Link to="/chat" className="btn btn-secondary">
-              Liên hệ hỗ trợ
-            </Link>
+                <Link to="/chat" className="btn" style={{ background: 'transparent', color: 'var(--primary)', border: '2px solid rgba(231,76,60,0.12)' }}>
+                  Liên hệ hỗ trợ
+                </Link>
+              </div>
+            </div>
+
+            <div className="cta-visual" aria-hidden="true">
+              <img src="https://images.unsplash.com/photo-1600891964599-f61ba0e24092?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=900" alt="Đặt món" />
+            </div>
           </div>
         </div>
       </section>

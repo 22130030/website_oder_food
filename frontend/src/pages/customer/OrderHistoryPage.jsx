@@ -1,36 +1,58 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { getMyOrders, getOrderDetail } from "../../services/orderApi";
-import Navbar from '../../components/common/Navbar';
-import Footer from '../../components/common/Footer';
+import Navbar from "../../components/common/Navbar";
+import Footer from "../../components/common/Footer";
+import logo from "../../logo.svg";
+import "./OrderHistoryPage.css";
 
 function OrderHistoryPage() {
   const [orders, setOrders] = useState([]);
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [activeStatus, setActiveStatus] = useState("ALL");
+  const [loading, setLoading] = useState(true);
 
   const formatMoney = (value) =>
     Number(value || 0).toLocaleString("vi-VN") + "đ";
 
   const formatDate = (value) =>
-    value ? new Date(value).toLocaleString("vi-VN") : "";
+    value ? new Date(value).toLocaleString("vi-VN") : "--";
 
   const statusMap = {
-    PENDING: { text: "Chờ xác nhận", bg: "#fff3cd", color: "#856404" },
-    CONFIRMED: { text: "Đã xác nhận", bg: "#d1ecf1", color: "#0c5460" },
-    SHIPPING: { text: "Đang giao", bg: "#cce5ff", color: "#004085" },
-    COMPLETED: { text: "Hoàn thành", bg: "#d4edda", color: "#155724" },
-    CANCELLED: { text: "Đã hủy", bg: "#f8d7da", color: "#721c24" },
+    ALL: { text: "Tất cả", icon: "🧾" },
+    PENDING: { text: "Chờ xác nhận", color: "yellow", icon: "⏱" },
+    CONFIRMED: { text: "Đã xác nhận", color: "blue", icon: "📦" },
+    PREPARING: { text: "Đang chuẩn bị", color: "blue", icon: "👨‍🍳" },
+    SHIPPING: { text: "Đang giao", color: "purple", icon: "🛵" },
+    DELIVERING: { text: "Đang giao", color: "purple", icon: "🛵" },
+    COMPLETED: { text: "Hoàn thành", color: "green", icon: "✅" },
+    CANCELLED: { text: "Đã hủy", color: "red", icon: "✕" },
   };
 
+  const tabs = [
+    { key: "ALL", label: "Tất cả" },
+    { key: "PENDING", label: "Chờ xác nhận" },
+    { key: "CONFIRMED", label: "Đã xác nhận" },
+    { key: "SHIPPING", label: "Đang giao" },
+    { key: "COMPLETED", label: "Hoàn thành" },
+    { key: "CANCELLED", label: "Đã hủy" },
+  ];
+
   const getStatus = (status) =>
-    statusMap[status] || { text: status || "Không rõ", bg: "#eee", color: "#333" };
+    statusMap[status] || {
+      text: status || "Không rõ",
+      color: "gray",
+      icon: "•",
+    };
 
   const loadOrders = async () => {
     try {
+      setLoading(true);
       const data = await getMyOrders();
-      setOrders(data);
+      setOrders(Array.isArray(data) ? data : []);
     } catch (error) {
       console.error("Lỗi tải lịch sử đơn hàng:", error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -47,314 +69,293 @@ function OrderHistoryPage() {
     loadOrders();
   }, []);
 
-  const filteredOrders =
-    activeStatus === "ALL"
-      ? orders
-      : orders.filter((order) => order.status === activeStatus);
+  const filteredOrders = useMemo(() => {
+    if (activeStatus === "ALL") return orders;
+    return orders.filter((order) => order.status === activeStatus);
+  }, [activeStatus, orders]);
 
-  const tabs = [
-    { key: "ALL", label: "Tất cả" },
-    { key: "PENDING", label: "Chờ xác nhận" },
-    { key: "CONFIRMED", label: "Đã xác nhận" },
-    { key: "SHIPPING", label: "Đang giao" },
-    { key: "COMPLETED", label: "Hoàn thành" },
-    { key: "CANCELLED", label: "Đã hủy" },
-  ];
+  const getTabCount = (status) => {
+    if (status === "ALL") return orders.length;
+    return orders.filter((order) => order.status === status).length;
+  };
+
+  const getFirstItem = (order) => {
+    const items = order.items || order.orderItems || [];
+    return items[0] || null;
+  };
+
+  const getItemsCount = (order) => {
+    const items = order.items || order.orderItems || [];
+    return items.length;
+  };
+
+  const getShippingAddress = (order) =>
+    order.shippingAddress || order.address || "Chưa có địa chỉ giao hàng";
 
   return (
     <>
       <Navbar />
-      <div style={{ background: "#f5f6fa", minHeight: "100vh", padding: "32px 70px" }}>
-        <div style={{ maxWidth: 1100, margin: "0 auto" }}>
-        <h2 style={{ fontSize: 30, marginBottom: 8, color: "#2d3436" }}>
-          Lịch sử đơn hàng
-        </h2>
-        <p style={{ color: "#636e72", marginBottom: 24 }}>
-          Theo dõi các đơn hàng bạn đã đặt tại FoodStack.
-        </p>
+      <main className="order-history-redesign">
+        <section className="order-history-hero">
+          <div className="order-history-container">
+            <div className="order-history-title-wrap">
+              <div>
+                <span className="order-history-kicker">FoodStack Orders</span>
+                <h1>Lịch sử đơn hàng</h1>
+                <p>Theo dõi đơn hàng, trạng thái giao hàng và xem lại các món bạn đã đặt.</p>
+              </div>
+              <div className="order-history-summary">
+                <span>{orders.length}</span>
+                <small>đơn hàng</small>
+              </div>
+            </div>
 
-        <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginBottom: 24 }}>
-          {tabs.map((tab) => (
-            <button
-              key={tab.key}
-              onClick={() => setActiveStatus(tab.key)}
-              style={{
-                border: "none",
-                padding: "10px 16px",
-                borderRadius: 999,
-                cursor: "pointer",
-                background: activeStatus === tab.key ? "#e17055" : "#fff",
-                color: activeStatus === tab.key ? "#fff" : "#2d3436",
-                boxShadow: "0 4px 12px rgba(0,0,0,0.08)",
-                fontWeight: 600,
-              }}
-            >
-              {tab.label}
-            </button>
-          ))}
-        </div>
-
-        {filteredOrders.length === 0 ? (
-          <div
-            style={{
-              background: "#fff",
-              padding: 40,
-              borderRadius: 18,
-              textAlign: "center",
-              color: "#636e72",
-              boxShadow: "0 8px 24px rgba(0,0,0,0.08)",
-            }}
-          >
-            Chưa có đơn hàng nào trong mục này.
+            <div className="order-history-tabs">
+              {tabs.map((tab) => {
+                const status = getStatus(tab.key);
+                return (
+                  <button
+                    key={tab.key}
+                    type="button"
+                    onClick={() => setActiveStatus(tab.key)}
+                    className={`history-tab ${activeStatus === tab.key ? "active" : ""}`}
+                  >
+                    <span className="tab-icon">{status.icon}</span>
+                    <span>{tab.label}</span>
+                    <b>{getTabCount(tab.key)}</b>
+                  </button>
+                );
+              })}
+            </div>
           </div>
-        ) : (
-          <div style={{ display: "grid", gap: 18 }}>
-            {filteredOrders.map((order) => {
-              const status = getStatus(order.status);
+        </section>
 
-              return (
-                <div
+        <section className="order-history-container order-history-content">
+          {loading ? (
+            <div className="order-history-empty">Đang tải lịch sử đơn hàng...</div>
+          ) : filteredOrders.length === 0 ? (
+            <EmptyState />
+          ) : (
+            <div className="orders-redesign-list">
+              {filteredOrders.map((order) => (
+                <OrderCard
                   key={order.id}
-                  style={{
-                    background: "#fff",
-                    borderRadius: 18,
-                    padding: 22,
-                    boxShadow: "0 8px 24px rgba(0,0,0,0.08)",
-                    border: "1px solid #eee",
-                  }}
-                >
-                  <div style={{ display: "flex", justifyContent: "space-between", gap: 20 }}>
-                    <div>
-                      <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                        <h3 style={{ margin: 0, color: "#2d3436" }}>
-                          Đơn hàng #{order.orderCode}
-                        </h3>
-
-                        <span
-                          style={{
-                            padding: "6px 12px",
-                            borderRadius: 999,
-                            background: status.bg,
-                            color: status.color,
-                            fontSize: 13,
-                            fontWeight: 700,
-                          }}
-                        >
-                          {status.text}
-                        </span>
-                      </div>
-
-                      <p style={{ margin: "10px 0 4px", color: "#636e72" }}>
-                        Ngày đặt: {formatDate(order.createdAt)}
-                      </p>
-                      <p style={{ margin: 0, color: "#636e72" }}>
-                        Thanh toán: {order.paymentMethod} - {order.paymentStatus}
-                      </p>
-                    </div>
-
-                    <div style={{ textAlign: "right" }}>
-                      <p style={{ margin: 0, color: "#636e72" }}>Tổng tiền</p>
-                      <h2 style={{ margin: "6px 0 14px", color: "#e17055" }}>
-                        {formatMoney(order.totalAmount)}
-                      </h2>
-
-                      <button
-                        onClick={() => viewDetail(order.id)}
-                        style={{
-                          border: "none",
-                          padding: "11px 18px",
-                          borderRadius: 10,
-                          background: "linear-gradient(135deg, #ff7675, #e17055)",
-                          color: "#fff",
-                          cursor: "pointer",
-                          fontWeight: 700,
-                          boxShadow: "0 6px 14px rgba(225,112,85,0.35)",
-                        }}
-                      >
-                        Xem chi tiết
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        )}
-      </div>
-
-      {selectedOrder && (
-        <div
-          style={{
-            position: "fixed",
-            inset: 0,
-            background: "rgba(45, 52, 54, 0.55)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            zIndex: 9999,
-            padding: 20,
-          }}
-        >
-          <div
-            style={{
-              width: 820,
-              maxHeight: "92vh",
-              overflowY: "auto",
-              background: "#fff",
-              borderRadius: 22,
-              boxShadow: "0 20px 60px rgba(0,0,0,0.25)",
-            }}
-          >
-            <div
-              style={{
-                padding: "24px 28px",
-                background: "linear-gradient(135deg, #ff7675, #e17055)",
-                color: "#fff",
-                borderRadius: "22px 22px 0 0",
-              }}
-            >
-              <h2 style={{ margin: 0 }}>Chi tiết đơn hàng</h2>
-              <p style={{ margin: "8px 0 0" }}>#{selectedOrder.orderCode}</p>
-            </div>
-
-            <div style={{ padding: 28 }}>
-              <div
-                style={{
-                  display: "grid",
-                  gridTemplateColumns: "1fr 1fr",
-                  gap: 16,
-                  marginBottom: 24,
-                }}
-              >
-                <InfoBox label="Ngày đặt" value={formatDate(selectedOrder.createdAt)} />
-                <InfoBox label="Trạng thái" value={getStatus(selectedOrder.status).text} />
-                <InfoBox label="Phương thức" value={selectedOrder.paymentMethod} />
-                <InfoBox label="Thanh toán" value={selectedOrder.paymentStatus} />
-              </div>
-
-              <h3 style={{ color: "#2d3436" }}>Thông tin giao hàng</h3>
-              <div
-                style={{
-                  background: "#f8f9fb",
-                  borderRadius: 14,
-                  padding: 16,
-                  marginBottom: 24,
-                }}
-              >
-                <p><b>Người nhận:</b> {selectedOrder.shippingName}</p>
-                <p><b>SĐT:</b> {selectedOrder.shippingPhone}</p>
-                <p><b>Địa chỉ:</b> {selectedOrder.shippingAddress}</p>
-                <p><b>Ghi chú:</b> {selectedOrder.note || "Không có"}</p>
-              </div>
-
-              <h3 style={{ color: "#2d3436" }}>Sản phẩm đã đặt</h3>
-
-              {selectedOrder.items?.map((item) => (
-                <div
-                  key={item.id}
-                  style={{
-                    display: "flex",
-                    gap: 14,
-                    padding: "14px 0",
-                    borderBottom: "1px solid #eee",
-                  }}
-                >
-                  <img
-                    src={item.foodImage}
-                    alt={item.foodName}
-                    style={{
-                      width: 86,
-                      height: 86,
-                      objectFit: "cover",
-                      borderRadius: 14,
-                      background: "#eee",
-                    }}
-                  />
-
-                  <div style={{ flex: 1 }}>
-                    <h4 style={{ margin: "0 0 8px", color: "#2d3436" }}>
-                      {item.foodName}
-                    </h4>
-                    <p style={{ margin: 0, color: "#636e72" }}>
-                      Số lượng: {item.quantity}
-                    </p>
-                    <p style={{ margin: "4px 0", color: "#636e72" }}>
-                      Đơn giá: {formatMoney(item.unitPrice)}
-                    </p>
-                  </div>
-
-                  <div style={{ fontWeight: 700, color: "#e17055" }}>
-                    {formatMoney(item.subtotal)}
-                  </div>
-                </div>
-              ))}
-
-              <div
-                style={{
-                  marginTop: 24,
-                  background: "#fff7f4",
-                  borderRadius: 16,
-                  padding: 18,
-                }}
-              >
-                <Row label="Tạm tính" value={formatMoney(selectedOrder.subtotal)} />
-                <Row label="Phí giao hàng" value={formatMoney(selectedOrder.shippingFee)} />
-                <Row
-                  label="Tổng cộng"
-                  value={formatMoney(selectedOrder.totalAmount)}
-                  bold
+                  order={order}
+                  status={getStatus(order.status)}
+                  firstItem={getFirstItem(order)}
+                  itemsCount={getItemsCount(order)}
+                  formatMoney={formatMoney}
+                  formatDate={formatDate}
+                  address={getShippingAddress(order)}
+                  onViewDetail={() => viewDetail(order.id)}
                 />
-              </div>
-
-              <button
-                onClick={() => setSelectedOrder(null)}
-                style={{
-                  marginTop: 22,
-                  width: "100%",
-                  border: "none",
-                  padding: "13px",
-                  borderRadius: 12,
-                  background: "#2d3436",
-                  color: "#fff",
-                  cursor: "pointer",
-                  fontWeight: 700,
-                }}
-              >
-                Đóng
-              </button>
+              ))}
             </div>
-          </div>
-        </div>
-      )}
-      </div>
+          )}
+        </section>
+
+        {selectedOrder && (
+          <OrderDetailModal
+            order={selectedOrder}
+            getStatus={getStatus}
+            formatMoney={formatMoney}
+            formatDate={formatDate}
+            onClose={() => setSelectedOrder(null)}
+          />
+        )}
+      </main>
       <Footer />
     </>
   );
 }
 
+function OrderCard({
+  order,
+  status,
+  firstItem,
+  itemsCount,
+  formatMoney,
+  formatDate,
+  address,
+  onViewDetail,
+}) {
+  const extraItems = Math.max(itemsCount - 1, 0);
+  const image = firstItem?.foodImage || firstItem?.image || logo;
+  const name = firstItem?.foodName || firstItem?.name || "Đơn hàng FoodStack";
+  const quantity = firstItem?.quantity || 1;
+
+  return (
+    <article className="order-redesign-card">
+      <div className="order-card-head">
+        <div className="order-code-block">
+          <div className={`status-icon status-${status.color || "gray"}`}>{status.icon}</div>
+          <div>
+            <h3>Mã đơn: {order.orderCode || `#${order.id}`}</h3>
+            <p>📅 {formatDate(order.createdAt || order.date)}</p>
+          </div>
+        </div>
+
+        <div className="order-total-block">
+          <span className={`status-pill status-${status.color || "gray"}`}>{status.text}</span>
+          <strong>{formatMoney(order.totalAmount || order.total)}</strong>
+        </div>
+      </div>
+
+      <div className="order-card-body">
+        <div className="order-item-preview">
+
+          <div className="order-item-info">
+            <h4>{name}</h4>
+            <p>Số lượng: {quantity}</p>
+            {extraItems > 0 && <b>+{extraItems} món khác</b>}
+            <div className="order-address">📍 {address}</div>
+          </div>
+        </div>
+
+        <OrderTimeline status={order.status} />
+
+        <div className="order-payment-row">
+          <span>Thanh toán: {order.paymentMethod || "--"}</span>
+          <span>{order.paymentStatus || "--"}</span>
+        </div>
+
+        <div className="order-actions">
+          <button type="button" className="primary-action" onClick={onViewDetail}>
+            👁 Xem chi tiết
+          </button>
+          <button type="button" className="secondary-action">
+            ↻ Đặt lại
+          </button>
+          {order.status === "COMPLETED" && (
+            <button type="button" className="review-action">
+              💬 Đánh giá
+            </button>
+          )}
+        </div>
+      </div>
+    </article>
+  );
+}
+
+function OrderTimeline({ status }) {
+  const steps = [
+    { key: "PENDING", label: "Đặt hàng" },
+    { key: "CONFIRMED", label: "Xác nhận" },
+    { key: "SHIPPING", label: "Đang giao" },
+    { key: "COMPLETED", label: "Hoàn thành" },
+  ];
+
+  const statusOrder = {
+    PENDING: 0,
+    CONFIRMED: 1,
+    PREPARING: 1,
+    SHIPPING: 2,
+    DELIVERING: 2,
+    COMPLETED: 3,
+    CANCELLED: -1,
+  };
+
+  const activeIndex = statusOrder[status] ?? 0;
+
+  if (status === "CANCELLED") {
+    return <div className="cancelled-timeline">Đơn hàng đã bị hủy</div>;
+  }
+
+  return (
+    <div className="order-timeline">
+      {steps.map((step, index) => (
+        <div
+          key={step.key}
+          className={`timeline-step ${index <= activeIndex ? "done" : ""}`}
+        >
+          <span>{index <= activeIndex ? "✓" : index + 1}</span>
+          <p>{step.label}</p>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function EmptyState() {
+  return (
+    <div className="order-history-empty">
+      <div>🧾</div>
+      <h3>Chưa có đơn hàng nào</h3>
+      <p>Các đơn hàng phù hợp với trạng thái này sẽ xuất hiện ở đây.</p>
+    </div>
+  );
+}
+
+function OrderDetailModal({ order, getStatus, formatMoney, formatDate, onClose }) {
+  const status = getStatus(order.status);
+
+  return (
+    <div className="order-detail-overlay" onClick={onClose}>
+      <div className="order-detail-modal" onClick={(e) => e.stopPropagation()}>
+        <div className="order-detail-header">
+          <div>
+            <span>Chi tiết đơn hàng</span>
+            <h2>{order.orderCode || `#${order.id}`}</h2>
+          </div>
+          <button type="button" onClick={onClose}>×</button>
+        </div>
+
+        <div className="order-detail-body">
+          <div className="detail-grid">
+            <InfoBox label="Ngày đặt" value={formatDate(order.createdAt)} />
+            <InfoBox label="Trạng thái" value={status.text} />
+            <InfoBox label="Phương thức" value={order.paymentMethod || "--"} />
+            <InfoBox label="Thanh toán" value={order.paymentStatus || "--"} />
+          </div>
+
+          <h3>Thông tin giao hàng</h3>
+          <div className="shipping-box">
+            <p><b>Người nhận:</b> {order.shippingName || "--"}</p>
+            <p><b>SĐT:</b> {order.shippingPhone || "--"}</p>
+            <p><b>Địa chỉ:</b> {order.shippingAddress || "--"}</p>
+            <p><b>Ghi chú:</b> {order.note || "Không có"}</p>
+          </div>
+
+          <h3>Sản phẩm đã đặt</h3>
+          <div className="detail-items">
+            {order.items?.map((item) => (
+              <div className="detail-item" key={item.id}>
+                <img src={item.foodImage || logo} alt={item.foodName} />
+                <div>
+                  <h4>{item.foodName}</h4>
+                  <p>Số lượng: {item.quantity}</p>
+                  <p>Đơn giá: {formatMoney(item.unitPrice)}</p>
+                </div>
+                <strong>{formatMoney(item.subtotal)}</strong>
+              </div>
+            ))}
+          </div>
+
+          <div className="total-box">
+            <Row label="Tạm tính" value={formatMoney(order.subtotal)} />
+            <Row label="Phí giao hàng" value={formatMoney(order.shippingFee)} />
+            <Row label="Tổng cộng" value={formatMoney(order.totalAmount)} bold />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function InfoBox({ label, value }) {
   return (
-    <div style={{ background: "#f8f9fb", borderRadius: 14, padding: 14 }}>
-      <div style={{ color: "#636e72", fontSize: 13 }}>{label}</div>
-      <div style={{ color: "#2d3436", fontWeight: 700, marginTop: 6 }}>{value}</div>
+    <div className="info-box">
+      <span>{label}</span>
+      <strong>{value}</strong>
     </div>
   );
 }
 
 function Row({ label, value, bold }) {
   return (
-    <div
-      style={{
-        display: "flex",
-        justifyContent: "space-between",
-        marginBottom: 10,
-        fontSize: bold ? 20 : 15,
-        fontWeight: bold ? 800 : 500,
-        color: bold ? "#e17055" : "#2d3436",
-      }}
-    >
+    <div className={`total-row ${bold ? "bold" : ""}`}>
       <span>{label}</span>
-      <span>{value}</span>
+      <strong>{value}</strong>
     </div>
   );
 }
