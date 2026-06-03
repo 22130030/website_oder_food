@@ -1,5 +1,16 @@
 {
+  "name": "frontend",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "vite --host 127.0.0.1 --port 5173",
+    "dev": "vite --host 127.0.0.1 --port 5173"
+  },
   "dependencies": {
     "@react-oauth/google": "^0.13.5"
+  },
+  "devDependencies": {
+    "vite": "^5.4.0"
   }
 }
