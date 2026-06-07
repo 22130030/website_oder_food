@@ -24,6 +24,7 @@ import AdminOrderManagement from '../pages/admin/AdminOrderManagement';
 import AdminUserManagement from '../pages/admin/AdminUserManagement';
 import AdminChatManagement from '../pages/admin/AdminChatManagement';
 import AdminStatistics from '../pages/admin/AdminStatistics';
+import VnpayReturnPage from '../pages/customer/VnpayReturnPage';
 
 function App() {
   return (
@@ -41,6 +42,7 @@ function App() {
             <Route path="/cart" element={<CartPage />} />
             <Route path="/chat" element={<ChatPage />} />
             <Route path="/checkout" element={<CheckoutPage />} />
+            <Route path="/vnpay-return" element={<VnpayReturnPage />} />
             <Route path="/order-success" element={<OrderSuccessPage />} />
             <Route path="/foods/:id" element={<FoodDetailPage />} />
             <Route path="/menu" element={<MenuPage />} />

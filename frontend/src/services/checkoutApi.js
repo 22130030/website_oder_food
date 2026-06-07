@@ -1,3 +1,5 @@
+// src/services/checkoutApi.js
+
 import axios from "axios";
 
 const API_URL = process.env.REACT_APP_API_URL || "http://localhost:8080/api";
@@ -10,8 +12,16 @@ export const checkout = async (payload, token) => {
   }
 
   const res = await axios.post(`${API_URL}/user/checkout`, payload, {
-    headers
+    headers,
   });
+
+  return res.data;
+};
+
+export const handleVnpayReturn = async (queryString) => {
+  const res = await axios.get(
+    `${API_URL}/user/checkout/vnpay-return${queryString}`
+  );
 
   return res.data;
 };

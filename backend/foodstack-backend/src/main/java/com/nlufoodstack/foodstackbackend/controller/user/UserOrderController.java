@@ -39,6 +39,7 @@ public class UserOrderController {
 
             List<OrderResponse> orders = orderRepository.findByUserOrderByCreatedAtDesc(user)
                     .stream()
+                    .filter(this::isVisibleOrder)
                     .map(order -> toOrderResponse(order, false))
                     .toList();
 
@@ -78,6 +79,17 @@ public class UserOrderController {
                     "error", e.getMessage()
             ));
         }
+    }
+    private boolean isVisibleOrder(Order order) {
+        boolean isFailedVnpay =
+                "VNPAY".equalsIgnoreCase(order.paymentMethod)
+                        && (
+                        "FAILED".equalsIgnoreCase(order.paymentStatus)
+                                || "CANCELLED".equalsIgnoreCase(order.status)
+                                || "PENDING_PAYMENT".equalsIgnoreCase(order.status)
+                );
+
+        return !isFailedVnpay;
     }
 
     private OrderResponse toOrderResponse(Order order, boolean includeItems) {
