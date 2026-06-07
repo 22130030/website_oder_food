@@ -90,7 +90,8 @@ public class SecurityConfig {
                                 "/uploads/**",
                                 "/api/categories/**",
                                 "/api/foods/**",
-                                "/api/cart/**"
+                                "/api/cart/**",
+                                "/api/user/checkout/vnpay-return"
                         ).permitAll()
                         .requestMatchers("/api/profile/**").hasRole("CUSTOMER")
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")

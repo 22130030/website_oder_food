@@ -19,6 +19,7 @@ public class VnpayService {
     public String createPaymentUrl(Order order, HttpServletRequest request) {
         String txnRef = order.orderCode;
         BigDecimal amount = order.totalAmount.multiply(BigDecimal.valueOf(100));
+
         Map<String, String> params = new HashMap<>();
         params.put("vnp_Version", "2.1.0");
         params.put("vnp_Command", "pay");
@@ -32,16 +33,22 @@ public class VnpayService {
         params.put("vnp_ReturnUrl", config.returnUrl);
         params.put("vnp_IpAddr", request.getRemoteAddr());
         params.put("vnp_CreateDate", LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss")));
-        String hashData = VnpayUtil.buildQuery(params, false);
+
+        String hashData = VnpayUtil.buildQuery(params, true);
         String secureHash = VnpayUtil.hmacSHA512(config.hashSecret, hashData);
+
         return config.payUrl + "?" + VnpayUtil.buildQuery(params, true) + "&vnp_SecureHash=" + secureHash;
     }
 
     public boolean verifyReturn(Map<String, String> params) {
         String receivedHash = params.get("vnp_SecureHash");
+
         Map<String, String> copy = new HashMap<>(params);
-        copy.remove("vnp_SecureHash"); copy.remove("vnp_SecureHashType");
-        String hashData = VnpayUtil.buildQuery(copy, false);
+        copy.remove("vnp_SecureHash");
+        copy.remove("vnp_SecureHashType");
+
+        String hashData = VnpayUtil.buildQuery(copy, true);
+
         return VnpayUtil.hmacSHA512(config.hashSecret, hashData).equalsIgnoreCase(receivedHash);
     }
 }
