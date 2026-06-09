@@ -250,6 +250,24 @@ a.xem-website,
 button.view-website {
   display: none !important;
 }
+.stat-change.negative {
+  color: #e74c3c;
+}
 
-/* Nếu dùng class cụ thể, thêm vào đây */
-/* Ví dụ: .sidebar-footer .btn-outline { display: none !important; } */
+.dashboard-loading-card,
+.dashboard-empty-box {
+  padding: 28px;
+  border-radius: 16px;
+  background: #fff;
+  color: #888;
+  text-align: center;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+  border: 1px solid #f0f0f0;
+}
+
+.dashboard-empty-cell {
+  padding: 28px !important;
+  text-align: center;
+  color: #888;
+}
+

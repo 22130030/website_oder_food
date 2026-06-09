@@ -23,7 +23,11 @@ const FOOD_PLACEHOLDER = `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(
 `)}`;
 
 const getOrderItems = (order) =>
-  order?.items || order?.orderItems || order?.orderDetails || order?.details || [];
+  order?.items ||
+  order?.orderItems ||
+  order?.orderDetails ||
+  order?.details ||
+  [];
 
 const getRawItemImage = (item) =>
   item?.foodImage ||
@@ -51,7 +55,17 @@ const getItemName = (item) =>
   "Món ăn đã đặt";
 
 const getFoodId = (item) =>
-  item?.foodId || item?.productId || item?.food?.id || item?.product?.id;
+  item?.foodItemId ||
+  item?.foodId ||
+  item?.productId ||
+  item?.food?.id ||
+  item?.product?.id;
+
+const normalizeStatus = (status) => {
+  if (status === "CONFIRMED") return "PREPARING";
+  if (status === "SHIPPING") return "DELIVERING";
+  return status;
+};
 
 const resolveItemFood = async (item) => {
   if (!item || getRawItemImage(item)) return item;
@@ -66,14 +80,14 @@ const resolveItemFood = async (item) => {
     return {
       ...item,
       resolvedImage: food.imageUrl || food.foodImage || food.image || "",
-      resolvedName: getItemName(item) === "Món ăn đã đặt" ? food.name : getItemName(item),
+      resolvedName:
+        getItemName(item) === "Món ăn đã đặt" ? food.name : getItemName(item),
     };
   } catch (error) {
     console.warn("Không tải được ảnh món trong đơn hàng:", error);
     return item;
   }
 };
-
 
 function OrderHistoryPage() {
   const [orders, setOrders] = useState([]);
@@ -88,21 +102,66 @@ function OrderHistoryPage() {
     value ? new Date(value).toLocaleString("vi-VN") : "--";
 
   const statusMap = {
-    ALL: { text: "Tất cả", icon: "" },
-    PENDING: { text: "Chờ xác nhận", color: "yellow", icon: "⏱" },
-    CONFIRMED: { text: "Đã xác nhận", color: "blue", icon: "" },
-    PREPARING: { text: "Đang chuẩn bị", color: "blue", icon: "" },
-    SHIPPING: { text: "Đang giao", color: "purple", icon: "" },
-    DELIVERING: { text: "Đang giao", color: "purple", icon: "" },
-    COMPLETED: { text: "Hoàn thành", color: "green", icon: "" },
-    CANCELLED: { text: "Đã hủy", color: "red", icon: "" },
+    ALL: {
+      text: "Tất cả",
+      icon: "",
+    },
+
+    PENDING: {
+      text: "Chờ xác nhận",
+      color: "yellow",
+      icon: "⏱",
+    },
+
+    PENDING_PAYMENT: {
+      text: "Chờ thanh toán",
+      color: "yellow",
+      icon: "💳",
+    },
+
+    PREPARING: {
+      text: "Đang chuẩn bị",
+      color: "blue",
+      icon: "👨‍🍳",
+    },
+
+    DELIVERING: {
+      text: "Đang giao",
+      color: "purple",
+      icon: "🛵",
+    },
+
+    COMPLETED: {
+      text: "Hoàn thành",
+      color: "green",
+      icon: "✓",
+    },
+
+    CANCELLED: {
+      text: "Đã hủy",
+      color: "red",
+      icon: "✕",
+    },
+
+    // Giữ lại để tương thích đơn cũ nếu database từng có status này
+    CONFIRMED: {
+      text: "Đang chuẩn bị",
+      color: "blue",
+      icon: "👨‍🍳",
+    },
+
+    SHIPPING: {
+      text: "Đang giao",
+      color: "purple",
+      icon: "🛵",
+    },
   };
 
   const tabs = [
     { key: "ALL", label: "Tất cả" },
     { key: "PENDING", label: "Chờ xác nhận" },
-    { key: "CONFIRMED", label: "Đã xác nhận" },
-    { key: "SHIPPING", label: "Đang giao" },
+    { key: "PREPARING", label: "Đang chuẩn bị" },
+    { key: "DELIVERING", label: "Đang giao" },
     { key: "COMPLETED", label: "Hoàn thành" },
     { key: "CANCELLED", label: "Đã hủy" },
   ];
@@ -117,6 +176,7 @@ function OrderHistoryPage() {
   const loadOrders = async () => {
     try {
       setLoading(true);
+
       const data = await getMyOrders();
       const orderList = Array.isArray(data) ? data : [];
 
@@ -126,7 +186,7 @@ function OrderHistoryPage() {
           let items = getOrderItems(order);
 
           // API lịch sử thường chỉ trả thông tin tóm tắt.
-          // Lấy chi tiết để có danh sách món và ảnh của món.
+          // Lấy chi tiết để có danh sách món và ảnh món.
           if (items.length === 0 && order.id) {
             try {
               fullOrder = await getOrderDetail(order.id);
@@ -158,7 +218,13 @@ function OrderHistoryPage() {
   const viewDetail = async (id) => {
     try {
       const data = await getOrderDetail(id);
-      setSelectedOrder(data);
+      const items = getOrderItems(data);
+      const resolvedItems = await Promise.all(items.map(resolveItemFood));
+
+      setSelectedOrder({
+        ...data,
+        items: resolvedItems,
+      });
     } catch (error) {
       console.error("Lỗi xem chi tiết đơn hàng:", error);
     }
@@ -170,12 +236,17 @@ function OrderHistoryPage() {
 
   const filteredOrders = useMemo(() => {
     if (activeStatus === "ALL") return orders;
-    return orders.filter((order) => order.status === activeStatus);
+
+    return orders.filter(
+      (order) => normalizeStatus(order.status) === activeStatus
+    );
   }, [activeStatus, orders]);
 
   const getTabCount = (status) => {
     if (status === "ALL") return orders.length;
-    return orders.filter((order) => order.status === status).length;
+
+    return orders.filter((order) => normalizeStatus(order.status) === status)
+      .length;
   };
 
   const getFirstItem = (order) => getOrderItems(order)[0] || null;
@@ -188,15 +259,24 @@ function OrderHistoryPage() {
   return (
     <>
       <Navbar />
+
       <main className="order-history-redesign">
         <section className="order-history-hero">
           <div className="order-history-container">
             <div className="order-history-title-wrap">
               <div>
-                <span className="order-history-kicker">FoodStack Orders</span>
+                <span className="order-history-kicker">
+                  FoodStack Orders
+                </span>
+
                 <h1>Lịch sử đơn hàng</h1>
-                <p>Theo dõi đơn hàng, trạng thái giao hàng và xem lại các món bạn đã đặt.</p>
+
+                <p>
+                  Theo dõi đơn hàng, trạng thái giao hàng và xem lại các món bạn
+                  đã đặt.
+                </p>
               </div>
+
               <div className="order-history-summary">
                 <span>{orders.length}</span>
                 <small>đơn hàng</small>
@@ -206,12 +286,15 @@ function OrderHistoryPage() {
             <div className="order-history-tabs">
               {tabs.map((tab) => {
                 const status = getStatus(tab.key);
+
                 return (
                   <button
                     key={tab.key}
                     type="button"
                     onClick={() => setActiveStatus(tab.key)}
-                    className={`history-tab ${activeStatus === tab.key ? "active" : ""}`}
+                    className={`history-tab ${
+                      activeStatus === tab.key ? "active" : ""
+                    }`}
                   >
                     <span className="tab-icon">{status.icon}</span>
                     <span>{tab.label}</span>
@@ -222,16 +305,18 @@ function OrderHistoryPage() {
             </div>
 
             <div className="order-perks">
-              <span> Cập nhật trạng thái rõ ràng</span>
-              <span> Theo dõi quá trình giao món</span>
-              <span> Liên hệ hỗ trợ nhanh</span>
+              <span>Cập nhật trạng thái rõ ràng</span>
+              <span>Theo dõi quá trình giao món</span>
+              <span>Liên hệ hỗ trợ nhanh</span>
             </div>
           </div>
         </section>
 
         <section className="order-history-container order-history-content">
           {loading ? (
-            <div className="order-history-empty">Đang tải lịch sử đơn hàng...</div>
+            <div className="order-history-empty">
+              Đang tải lịch sử đơn hàng...
+            </div>
           ) : filteredOrders.length === 0 ? (
             <EmptyState />
           ) : (
@@ -263,6 +348,7 @@ function OrderHistoryPage() {
           />
         )}
       </main>
+
       <Footer />
     </>
   );
@@ -287,7 +373,10 @@ function OrderCard({
     <article className="order-redesign-card">
       <div className="order-card-head">
         <div className="order-code-block">
-          <div className={`status-icon status-${status.color || "gray"}`}>{status.icon}</div>
+          <div className={`status-icon status-${status.color || "gray"}`}>
+            {status.icon}
+          </div>
+
           <div>
             <h3>Mã đơn: {order.orderCode || `#${order.id}`}</h3>
             <p>📅 {formatDate(order.createdAt || order.date)}</p>
@@ -295,7 +384,10 @@ function OrderCard({
         </div>
 
         <div className="order-total-block">
-          <span className={`status-pill status-${status.color || "gray"}`}>{status.text}</span>
+          <span className={`status-pill status-${status.color || "gray"}`}>
+            {status.text}
+          </span>
+
           <strong>{formatMoney(order.totalAmount || order.total)}</strong>
         </div>
       </div>
@@ -303,19 +395,31 @@ function OrderCard({
       <div className="order-card-body">
         <div className="order-item-preview">
           <div className="order-item-image-wrap">
-            <img src={image} alt={name} onError={(event) => { event.currentTarget.src = FOOD_PLACEHOLDER; }} />
+            <img
+              src={image}
+              alt={name}
+              onError={(event) => {
+                event.currentTarget.src = FOOD_PLACEHOLDER;
+              }}
+            />
+
             <span>{quantity}</span>
           </div>
 
           <div className="order-item-info">
             <h4>{name}</h4>
             <p>Số lượng: {quantity}</p>
+
             {extraItems > 0 && <b>+{extraItems} món khác</b>}
+
             <div className="order-address">{address}</div>
           </div>
         </div>
 
-        <OrderTimeline status={order.status} />
+        <OrderTimeline
+          status={order.status}
+          cancelReason={order.cancelReason}
+        />
 
         <div className="order-payment-row">
           <span>Thanh toán: {order.paymentMethod || "--"}</span>
@@ -323,12 +427,18 @@ function OrderCard({
         </div>
 
         <div className="order-actions">
-          <button type="button" className="primary-action" onClick={onViewDetail}>
+          <button
+            type="button"
+            className="primary-action"
+            onClick={onViewDetail}
+          >
             Xem chi tiết
           </button>
+
           <button type="button" className="secondary-action">
-             Đặt lại
+            Đặt lại
           </button>
+
           {order.status === "COMPLETED" && (
             <button type="button" className="review-action">
               Đánh giá
@@ -340,11 +450,11 @@ function OrderCard({
   );
 }
 
-function OrderTimeline({ status }) {
+function OrderTimeline({ status, cancelReason }) {
   const steps = [
     { key: "PENDING", label: "Đặt hàng" },
-    { key: "CONFIRMED", label: "Xác nhận" },
-    { key: "SHIPPING", label: "Đang giao" },
+    { key: "PREPARING", label: "Đang chuẩn bị" },
+    { key: "DELIVERING", label: "Đang giao" },
     { key: "COMPLETED", label: "Hoàn thành" },
   ];
 
@@ -361,7 +471,17 @@ function OrderTimeline({ status }) {
   const activeIndex = statusOrder[status] ?? 0;
 
   if (status === "CANCELLED") {
-    return <div className="cancelled-timeline">Đơn hàng đã bị hủy</div>;
+    return (
+      <div className="cancelled-timeline">
+        <strong>Đơn hàng đã bị hủy</strong>
+
+        {cancelReason && (
+          <p>
+            <b>Lý do:</b> {cancelReason}
+          </p>
+        )}
+      </div>
+    );
   }
 
   return (
@@ -389,19 +509,31 @@ function EmptyState() {
   );
 }
 
-function OrderDetailModal({ order, getStatus, formatMoney, formatDate, onClose }) {
+function OrderDetailModal({
+  order,
+  getStatus,
+  formatMoney,
+  formatDate,
+  onClose,
+}) {
   const status = getStatus(order.status);
   const items = getOrderItems(order);
 
   return (
     <div className="order-detail-overlay" onClick={onClose}>
-      <div className="order-detail-modal" onClick={(e) => e.stopPropagation()}>
+      <div
+        className="order-detail-modal"
+        onClick={(event) => event.stopPropagation()}
+      >
         <div className="order-detail-header">
           <div>
             <span>Chi tiết đơn hàng</span>
             <h2>{order.orderCode || `#${order.id}`}</h2>
           </div>
-          <button type="button" onClick={onClose}>×</button>
+
+          <button type="button" onClick={onClose}>
+            ×
+          </button>
         </div>
 
         <div className="order-detail-body">
@@ -413,27 +545,54 @@ function OrderDetailModal({ order, getStatus, formatMoney, formatDate, onClose }
           </div>
 
           <h3>Thông tin giao hàng</h3>
+
           <div className="shipping-box">
-            <p><b>Người nhận:</b> {order.shippingName || "--"}</p>
-            <p><b>SĐT:</b> {order.shippingPhone || "--"}</p>
-            <p><b>Địa chỉ:</b> {order.shippingAddress || "--"}</p>
-            <p><b>Ghi chú:</b> {order.note || "Không có"}</p>
+            <p>
+              <b>Người nhận:</b> {order.shippingName || "--"}
+            </p>
+
+            <p>
+              <b>SĐT:</b> {order.shippingPhone || "--"}
+            </p>
+
+            <p>
+              <b>Địa chỉ:</b> {order.shippingAddress || "--"}
+            </p>
+
+            <p>
+              <b>Ghi chú:</b> {order.note || "Không có"}
+            </p>
           </div>
 
+          {order.status === "CANCELLED" && order.cancelReason && (
+            <>
+              <h3>Lý do hủy đơn</h3>
+
+              <div className="cancel-reason-box">
+                <p>{order.cancelReason}</p>
+              </div>
+            </>
+          )}
+
           <h3>Sản phẩm đã đặt</h3>
+
           <div className="detail-items">
             {items.map((item, index) => (
               <div className="detail-item" key={item.id || index}>
                 <img
                   src={getItemImage(item)}
                   alt={getItemName(item)}
-                  onError={(event) => { event.currentTarget.src = FOOD_PLACEHOLDER; }}
+                  onError={(event) => {
+                    event.currentTarget.src = FOOD_PLACEHOLDER;
+                  }}
                 />
+
                 <div>
                   <h4>{getItemName(item)}</h4>
                   <p>Số lượng: {item.quantity}</p>
                   <p>Đơn giá: {formatMoney(item.unitPrice)}</p>
                 </div>
+
                 <strong>{formatMoney(item.subtotal)}</strong>
               </div>
             ))}
@@ -442,7 +601,11 @@ function OrderDetailModal({ order, getStatus, formatMoney, formatDate, onClose }
           <div className="total-box">
             <Row label="Tạm tính" value={formatMoney(order.subtotal)} />
             <Row label="Phí giao hàng" value={formatMoney(order.shippingFee)} />
-            <Row label="Tổng cộng" value={formatMoney(order.totalAmount)} bold />
+            <Row
+              label="Tổng cộng"
+              value={formatMoney(order.totalAmount)}
+              bold
+            />
           </div>
         </div>
       </div>
