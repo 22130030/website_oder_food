@@ -83,30 +83,49 @@ export const CartProvider = ({ children }) => {
     }
   };
 
-  const updateQuantity = (foodId, newQuantity) => {
-    if (newQuantity <= 0) {
-      removeFromCart(foodId);
-      return;
-    }
+  const updateQuantity = async (foodId, newQuantity) => {
+  const userId = getUserId();
 
-    setCartItems((prev) =>
-      prev.map((item) =>
-        item.id === foodId ? { ...item, quantity: newQuantity } : item
-      )
-    );
-  };
+  if (!userId) {
+    toast.warning('Vui lòng đăng nhập');
+    return;
+  }
 
-  const decreaseItem = (foodId) => {
-    setCartItems((prev) =>
-      prev
-        .map((item) =>
-          item.id === foodId
-            ? { ...item, quantity: Math.max(0, item.quantity - 1) }
-            : item
-        )
-        .filter((item) => item.quantity > 0)
+  if (newQuantity <= 0) {
+    await removeFromCart(foodId);
+    return;
+  }
+
+  // Cập nhật giao diện trước cho mượt
+  setCartItems((prev) =>
+    prev.map((item) =>
+      item.id === foodId ? { ...item, quantity: newQuantity } : item
+    )
+  );
+
+  try {
+    await axios.put(
+      `http://localhost:8080/api/cart/${foodId}?userId=${userId}`,
+      {
+        quantity: newQuantity,
+      }
     );
-  };
+
+    await loadCartFromDatabase();
+  } catch (error) {
+    console.error('Lỗi cập nhật số lượng giỏ hàng:', error);
+    toast.error('Không thể cập nhật số lượng món');
+    await loadCartFromDatabase();
+  }
+};
+
+  const decreaseItem = async (foodId) => {
+  const item = cartItems.find((cartItem) => cartItem.id === foodId);
+
+  if (!item) return;
+
+  await updateQuantity(foodId, item.quantity - 1);
+};
 
   const removeFromCart = async (foodId) => {
   const userId = getUserId();
@@ -130,9 +149,19 @@ export const CartProvider = ({ children }) => {
   }
 };
 
-  const clearCart = () => {
-    setCartItems([]);
-  };
+  const clearCart = async () => {
+  const userId = getUserId();
+
+  setCartItems([]);
+
+  if (!userId) return;
+
+  try {
+    await axios.delete(`http://localhost:8080/api/cart/clear?userId=${userId}`);
+  } catch (error) {
+    console.error('Lỗi xóa toàn bộ giỏ hàng:', error);
+  }
+};
 
   const totalQuantity = useMemo(() => {
     return cartItems.reduce((sum, item) => sum + item.quantity, 0);

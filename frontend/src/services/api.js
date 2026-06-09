@@ -98,4 +98,22 @@ export const profileAPI = {
     api.put(`/profile/${userId}/change-password`, data),
 };
 
+export const adminOrderAPI = {
+  getOrders: (params = {}) => api.get('/admin/orders', { params }),
+
+  getOrderById: (id) => api.get(`/admin/orders/${id}`),
+
+  updateStatus: (id, status, cancelReason = '') =>
+    api.patch(`/admin/orders/${id}/status`, {
+      status,
+      cancelReason,
+    }),
+};
+export const adminStatisticsAPI = {
+  getOverview: () => api.get('/admin/statistics'),
+};
+export const adminDashboardAPI = {
+  getDashboard: () => api.get('/admin/dashboard/overview'),
+};
+
 export default api;

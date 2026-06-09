@@ -18,9 +18,17 @@ public class OrderResponse {
     private BigDecimal shippingFee;
     private BigDecimal totalAmount;
 
+    private Long userId;
+    private String customerEmail;
+
     private String shippingName;
     private String shippingPhone;
     private String shippingAddress;
+    private BigDecimal shippingLat;
+    private BigDecimal shippingLng;
+    private String shippingPlaceId;
+    private BigDecimal shippingDistanceKm;
+
     private String note;
     private String cancelReason;
 
