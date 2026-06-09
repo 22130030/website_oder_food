@@ -545,24 +545,38 @@ const AdminOrderManagement = () => {
                 <h4>Thanh toán</h4>
 
                 <div className="detail-line">
-                  <span>Phương thức</span>
-                  <strong>{detailOrder.paymentMethod || 'COD'}</strong>
-                </div>
+  <span>Phương thức</span>
+  <strong>{detailOrder.paymentMethod || 'COD'}</strong>
+</div>
 
-                <div className="detail-line">
-                  <span>Tạm tính</span>
-                  <strong>{formatMoney(detailOrder.subtotal)}</strong>
-                </div>
+{detailOrder.voucherCode && (
+  <div className="detail-line voucher-line">
+    <span>Mã giảm giá</span>
+    <strong>{detailOrder.voucherCode}</strong>
+  </div>
+)}
 
-                <div className="detail-line">
-                  <span>Phí giao hàng</span>
-                  <strong>{formatMoney(detailOrder.shippingFee)}</strong>
-                </div>
+<div className="detail-line">
+  <span>Tạm tính</span>
+  <strong>{formatMoney(detailOrder.subtotal)}</strong>
+</div>
 
-                <div className="detail-line detail-total">
-                  <span>Tổng cộng</span>
-                  <strong>{formatMoney(detailOrder.totalAmount)}</strong>
-                </div>
+<div className="detail-line">
+  <span>Phí giao hàng</span>
+  <strong>{formatMoney(detailOrder.shippingFee)}</strong>
+</div>
+
+{Number(detailOrder.discountAmount || 0) > 0 && (
+  <div className="detail-line discount-line">
+    <span>Giảm giá voucher</span>
+    <strong>-{formatMoney(detailOrder.discountAmount)}</strong>
+  </div>
+)}
+
+<div className="detail-line detail-total">
+  <span>Tổng cộng</span>
+  <strong>{formatMoney(detailOrder.totalAmount)}</strong>
+</div>
               </div>
 
               {detailOrder.note && (

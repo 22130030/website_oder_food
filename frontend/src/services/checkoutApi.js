@@ -25,3 +25,11 @@ export const handleVnpayReturn = async (queryString) => {
 
   return res.data;
 };
+export const userVoucherAPI = {
+  applyVoucher: (data) =>
+    axios.post("http://localhost:8080/api/user/vouchers/apply", data, {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+    }),
+};

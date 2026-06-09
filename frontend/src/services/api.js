@@ -21,13 +21,13 @@ api.interceptors.request.use(
 export const authAPI = {
   register: (data) => api.post('/auth/register', data),
   login: (data) => api.post('/auth/login', data),
-  // Gửi idToken (credential) từ Google lên backend để xác thực
   googleLogin: (idToken) => api.post('/auth/google', { idToken })
 };
 
 export const foodAPI = {
   getFoods: (params = {}) => api.get('/foods', { params }),
   getFoodById: (id) => api.get(`/foods/${id}`),
+  getFoodReviews: (id) => api.get(`/foods/${id}/reviews`),
   getCategories: () => api.get('/categories'),
 };
 
@@ -114,6 +114,22 @@ export const adminStatisticsAPI = {
 };
 export const adminDashboardAPI = {
   getDashboard: () => api.get('/admin/dashboard/overview'),
+};
+
+export const adminVoucherAPI = {
+  getVouchers: (params = {}) => api.get('/admin/vouchers', { params }),
+
+  createVoucher: (data) => api.post('/admin/vouchers', data),
+
+  updateVoucher: (id, data) => api.put(`/admin/vouchers/${id}`, data),
+
+  toggleVoucher: (id) => api.patch(`/admin/vouchers/${id}/toggle`),
+
+  deleteVoucher: (id) => api.delete(`/admin/vouchers/${id}`),
+};
+
+export const userVoucherAPI = {
+  applyVoucher: (data) => api.post('/user/vouchers/apply', data),
 };
 
 export default api;

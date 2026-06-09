@@ -24,6 +24,10 @@ public class Order {
     @Column(name="cancel_reason") public String cancelReason;
     @Column(name="payment_method") public String paymentMethod = "COD";
     @Column(name="payment_status") public String paymentStatus = "UNPAID";
+    @Column(name = "voucher_code", length = 50)
+    public String voucherCode;
+    @Column(name = "discount_amount", precision = 15, scale = 2)
+    public BigDecimal discountAmount = BigDecimal.ZERO;
     public String note;
     @Column(name="created_at") public LocalDateTime createdAt = LocalDateTime.now();
     @Column(name="updated_at") public LocalDateTime updatedAt = LocalDateTime.now();

@@ -50,9 +50,11 @@ const FoodCard = ({ food }) => {
         <p className="food-desc">{food.description}</p>
 
         <div className="food-rating">
-          {'⭐'.repeat(Math.round(food.rating || 4))} ({food.reviewCount || 0}{' '}
-          đánh giá)
-        </div>
+  {food.reviewCount > 0
+    ? '⭐'.repeat(Math.round(Number(food.rating || 0)))
+    : '☆☆☆☆☆'}{" "}
+  ({food.reviewCount || 0} đánh giá)
+</div>
 
         {/* ========== CARD FOOTER ========== */}
         <div className="food-card-footer">

@@ -32,6 +32,9 @@ public class OrderResponse {
     private String note;
     private String cancelReason;
 
+    private String voucherCode;
+    private BigDecimal discountAmount;
+
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 

@@ -1,7 +1,9 @@
 package com.nlufoodstack.foodstackbackend.dto.request;
 
-import java.math.BigDecimal;
+import lombok.Data;
 
+import java.math.BigDecimal;
+@Data
 public class CheckoutRequest {
     public String shippingName;
     public String shippingPhone;
@@ -11,5 +13,6 @@ public class CheckoutRequest {
     public String shippingPlaceId;
     public BigDecimal shippingDistanceKm;
     public String paymentMethod; // COD | VNPAY
+    private String voucherCode;
     public String note;
 }

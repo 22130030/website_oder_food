@@ -413,3 +413,13 @@
     flex-direction: column;
   }
 }
+.voucher-line strong {
+  color: #f45139;
+  font-weight: 900;
+}
+
+.discount-line span,
+.discount-line strong {
+  color: #047857 !important;
+  font-weight: 850;
+}

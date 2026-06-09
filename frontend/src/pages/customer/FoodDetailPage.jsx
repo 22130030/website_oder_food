@@ -18,6 +18,7 @@ const FoodDetailPage = () => {
   const [quantity, setQuantity] = useState(1);
   const [loading, setLoading] = useState(false);
   const [added, setAdded] = useState(false);
+  const [reviews, setReviews] = useState([]);
 
   const getImageSrc = (imageUrl) => {
     if (!imageUrl) return '/placeholder-food.png';
@@ -25,19 +26,54 @@ const FoodDetailPage = () => {
     return `http://localhost:8080${imageUrl}`;
   };
 
-  const loadFoodDetail = async () => {
-    setLoading(true);
+  const formatReviewDate = (value) => {
+  if (!value) return "Hôm nay";
 
-    try {
-      const res = await foodAPI.getFoodById(id);
-      setFood(res.data);
-    } catch (err) {
-      console.error('Lỗi load chi tiết món ăn:', err);
-      setFood(null);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const date = new Date(value);
+  const now = new Date();
+
+  const diffMs = now - date;
+  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+
+  if (diffDays <= 0) return "Hôm nay";
+  if (diffDays === 1) return "Hôm qua";
+  if (diffDays < 7) return `${diffDays} ngày trước`;
+
+  return date.toLocaleDateString("vi-VN");
+};
+
+const renderStars = (rating) => {
+  const value = Number(rating || 0);
+
+  return "★★★★★"
+    .split("")
+    .map((star, index) => (index < value ? "★" : "☆"))
+    .join("");
+};
+
+const getAvatarLetter = (name) => {
+  return (name || "K").trim().charAt(0).toUpperCase();
+};
+
+  const loadFoodDetail = async () => {
+  setLoading(true);
+
+  try {
+    const [foodRes, reviewRes] = await Promise.all([
+      foodAPI.getFoodById(id),
+      foodAPI.getFoodReviews(id),
+    ]);
+
+    setFood(foodRes.data);
+    setReviews(Array.isArray(reviewRes.data) ? reviewRes.data : []);
+  } catch (err) {
+    console.error("Lỗi load chi tiết món ăn:", err);
+    setFood(null);
+    setReviews([]);
+  } finally {
+    setLoading(false);
+  }
+};
 
   useEffect(() => {
     loadFoodDetail();
@@ -142,7 +178,9 @@ const FoodDetailPage = () => {
   const totalPrice = finalPrice * quantity;
   const isAvailable = food.isAvailable !== false;
   const categoryName = food.categoryName || food.category?.name || 'Món ăn';
-  const rating = food.avgRating || '4.8';
+  const reviewCount = reviews.length;
+  const rating = Number(food.avgRating || 0);
+  const displayRating = rating > 0 ? rating.toFixed(1) : "Chưa có";
   const totalSold = food.totalSold || 0;
   const discountPercent =
     discountPrice && price > discountPrice
@@ -222,11 +260,13 @@ const FoodDetailPage = () => {
               <h1>{food.name}</h1>
 
               <div className="detail-rating">
-                <span className="stars">★★★★★</span>
-                <strong>{rating}</strong>
-                <span className="divider"></span>
-                <span>{totalSold} lượt đặt</span>
-              </div>
+  <span className="stars">{rating > 0 ? renderStars(Math.round(rating)) : "☆☆☆☆☆"}</span>
+  <strong>{displayRating}</strong>
+  <span className="divider"></span>
+  <span>{reviewCount} đánh giá</span>
+  <span className="divider"></span>
+  <span>{totalSold} lượt đặt</span>
+</div>
 
               <p className="detail-desc">
                 {food.description || 'Món ăn nóng hổi, thơm ngon và được chuẩn bị cẩn thận tại NLU-FoodStack.'}
@@ -243,7 +283,10 @@ const FoodDetailPage = () => {
                 </div>
                 <div className="meta-item">
                   <span>⭐</span>
-                  <div><small>Đánh giá</small><strong>{rating}/5</strong></div>
+                  <div>
+  <small>Đánh giá</small>
+  <strong>{rating > 0 ? `${displayRating}/5` : "Chưa có"}</strong>
+</div>
                 </div>
               </div>
 
@@ -350,34 +393,70 @@ const FoodDetailPage = () => {
             </div>
 
             <div className="reviews-section">
-              <div className="reviews-heading">
-                <div>
-                  <span className="section-kicker">PHẢN HỒI KHÁCH HÀNG</span>
-                  <h2>Đánh giá món ăn</h2>
-                </div>
-                <div className="review-score">
-                  <strong>{rating}</strong>
-                  <span>★★★★★</span>
-                  <small>Dựa trên phản hồi</small>
-                </div>
-              </div>
+  <div className="reviews-heading">
+    <div>
+      <span className="section-kicker">PHẢN HỒI KHÁCH HÀNG</span>
+      <h2>Đánh giá món ăn</h2>
+    </div>
 
-              <div className="reviews-list">
-                <div className="review-card">
-                  <div className="review-header">
-                    <div className="reviewer-avatar">A</div>
-                    <div>
-                      <strong>Khách hàng</strong>
-                      <div className="review-rating">★★★★★</div>
-                    </div>
-                    <span className="review-date">Hôm nay</span>
-                  </div>
-                  <p className="review-comment">
-                    Món ăn ngon, phần ăn đẹp mắt, giao hàng nhanh và chất lượng ổn định.
-                  </p>
-                </div>
+    <div className="review-score">
+      <strong>{rating > 0 ? displayRating : "0"}</strong>
+      <span>{rating > 0 ? renderStars(Math.round(rating)) : "☆☆☆☆☆"}</span>
+      <small>
+        {reviewCount > 0
+          ? `Dựa trên ${reviewCount} phản hồi`
+          : "Chưa có phản hồi"}
+      </small>
+    </div>
+  </div>
+
+  <div className="reviews-list">
+    {reviews.length === 0 ? (
+      <div className="review-empty">
+        <div>💬</div>
+        <strong>Chưa có đánh giá nào</strong>
+        <p>Hãy là người đầu tiên đánh giá món ăn này sau khi đặt hàng.</p>
+      </div>
+    ) : (
+      reviews.map((review) => (
+        <div className="review-card" key={review.id}>
+          <div className="review-header">
+            {review.customerAvatar ? (
+              <img
+                className="reviewer-avatar-img"
+                src={
+                  review.customerAvatar.startsWith("http")
+                    ? review.customerAvatar
+                    : `http://localhost:8080${review.customerAvatar}`
+                }
+                alt={review.customerName || "Khách hàng"}
+              />
+            ) : (
+              <div className="reviewer-avatar">
+                {getAvatarLetter(review.customerName)}
+              </div>
+            )}
+
+            <div>
+              <strong>{review.customerName || "Khách hàng"}</strong>
+              <div className="review-rating">
+                {renderStars(review.rating)}
               </div>
             </div>
+
+            <span className="review-date">
+              {formatReviewDate(review.createdAt)}
+            </span>
+          </div>
+
+          <p className="review-comment">
+            {review.comment || "Khách hàng chưa để lại nhận xét."}
+          </p>
+        </div>
+      ))
+    )}
+  </div>
+</div>
           </section>
         </div>
       </div>

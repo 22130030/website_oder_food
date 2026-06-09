@@ -19,5 +19,5 @@ public class FoodResponse {
     private Boolean isAvailable;
     private BigDecimal avgRating;
     private Integer totalSold;
-
+    private Long totalReviews;
 }

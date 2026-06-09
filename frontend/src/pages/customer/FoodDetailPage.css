@@ -803,3 +803,39 @@
     border-radius: 20px;
   }
 }
+.reviewer-avatar-img {
+  width: 43px;
+  height: 43px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #fff;
+  box-shadow: 0 6px 14px rgba(15, 23, 42, 0.12);
+}
+
+.review-empty {
+  padding: 28px 18px;
+  border-radius: 18px;
+  text-align: center;
+  color: #667085;
+  background: #f8fafc;
+  border: 1px dashed #d9e1ec;
+}
+
+.review-empty div {
+  margin-bottom: 8px;
+  font-size: 34px;
+}
+
+.review-empty strong {
+  display: block;
+  margin-bottom: 6px;
+  color: var(--dark);
+  font-size: 16px;
+  font-weight: 850;
+}
+
+.review-empty p {
+  margin: 0;
+  font-size: 13.5px;
+  line-height: 1.5;
+}

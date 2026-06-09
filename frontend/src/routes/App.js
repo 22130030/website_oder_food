@@ -25,6 +25,7 @@ import AdminUserManagement from '../pages/admin/AdminUserManagement';
 import AdminChatManagement from '../pages/admin/AdminChatManagement';
 import AdminStatistics from '../pages/admin/AdminStatistics';
 import VnpayReturnPage from '../pages/customer/VnpayReturnPage';
+import AdminVoucherManagement from '../pages/admin/AdminVoucherManagement';
 
 function App() {
   return (
@@ -55,6 +56,7 @@ function App() {
             <Route path="/admin/orders" element={<AdminOrderManagement />} />
             <Route path="/admin/users" element={<AdminUserManagement />} />
             <Route path="/admin/chat" element={<AdminChatManagement />} />
+            <Route path="/admin/vouchers" element={<AdminVoucherManagement />} />
             <Route path="/admin/statistics" element={<AdminStatistics />} />
           </Routes>
 
