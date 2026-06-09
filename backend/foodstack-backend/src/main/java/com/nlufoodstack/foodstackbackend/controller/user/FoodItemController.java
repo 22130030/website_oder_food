@@ -6,6 +6,8 @@ import com.nlufoodstack.foodstackbackend.entity.FoodItem;
 import com.nlufoodstack.foodstackbackend.repository.CategoryRepository;
 import com.nlufoodstack.foodstackbackend.repository.FoodItemRepository;
 import org.springframework.web.bind.annotation.*;
+import com.nlufoodstack.foodstackbackend.repository.ReviewRepository;
+import java.math.RoundingMode;
 
 import java.math.BigDecimal;
 import java.util.Comparator;
@@ -17,11 +19,14 @@ public class FoodItemController {
 
     private final FoodItemRepository foodItemRepository;
     private final CategoryRepository categoryRepository;
+    private final ReviewRepository reviewRepository;
 
     public FoodItemController(FoodItemRepository foodItemRepository,
-                              CategoryRepository categoryRepository) {
+                              CategoryRepository categoryRepository,
+                              ReviewRepository reviewRepository) {
         this.foodItemRepository = foodItemRepository;
         this.categoryRepository = categoryRepository;
+        this.reviewRepository = reviewRepository;
     }
 
     @GetMapping("/foods")
@@ -158,6 +163,19 @@ public class FoodItemController {
         response.setImageUrl(food.getImageUrl());
         response.setIsAvailable(food.getIsAvailable());
         response.setAvgRating(food.getAvgRating());
+
+        Double avg = reviewRepository.findAverageRatingByFoodItemId(food.getId());
+        long totalReviews = reviewRepository.countByFoodItemId(food.getId());
+
+        if (avg != null) {
+            response.setAvgRating(
+                    BigDecimal.valueOf(avg).setScale(2, RoundingMode.HALF_UP)
+            );
+        } else {
+            response.setAvgRating(BigDecimal.ZERO);
+        }
+
+        response.setTotalReviews(totalReviews);
         response.setTotalSold(food.getTotalSold());
 
         return response;

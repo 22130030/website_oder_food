@@ -13,6 +13,7 @@ const MENU_ITEMS = [
   { path: '/admin/users', icon: '', label: 'Quản lý người dùng' },
   { path: '/admin/chat', icon: '', label: 'Quản lý chat' },
   { path: '/admin/statistics', icon: '', label: 'Thống kê & Báo cáo' },
+  { path: '/admin/vouchers', label: 'Quản lý voucher' }
 ];
 
 const AdminSidebar = () => {

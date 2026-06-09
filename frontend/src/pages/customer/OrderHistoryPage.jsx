@@ -1,5 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
-import { getMyOrders, getOrderDetail } from "../../services/orderApi";
+import { useNavigate } from "react-router-dom";
+import { useCart } from "../../context/CartContext";
+import { getMyOrders, getOrderDetail, cancelOrder,createReview, } from "../../services/orderApi";
+import { toast } from "react-toastify";
 import Navbar from "../../components/common/Navbar";
 import Footer from "../../components/common/Footer";
 import { foodAPI } from "../../services/api";
@@ -66,6 +69,28 @@ const normalizeStatus = (status) => {
   if (status === "SHIPPING") return "DELIVERING";
   return status;
 };
+const canReorderOrder = (order) => {
+  return normalizeStatus(order?.status) === "COMPLETED";
+};
+const canUserCancelOrder = (order) => {
+  const status = normalizeStatus(order?.status);
+  const paymentMethod = (order?.paymentMethod || "COD").toUpperCase();
+  const paymentStatus = (order?.paymentStatus || "").toUpperCase();
+
+  return (
+    status === "PENDING" &&
+    paymentMethod === "COD" &&
+    paymentStatus !== "PAID"
+  );
+};
+
+const isPaidVnpayOrder = (order) => {
+  const status = normalizeStatus(order?.status);
+  const paymentMethod = (order?.paymentMethod || "").toUpperCase();
+  const paymentStatus = (order?.paymentStatus || "").toUpperCase();
+
+  return status === "PENDING" && paymentMethod === "VNPAY" && paymentStatus === "PAID";
+};
 
 const resolveItemFood = async (item) => {
   if (!item || getRawItemImage(item)) return item;
@@ -90,10 +115,28 @@ const resolveItemFood = async (item) => {
 };
 
 function OrderHistoryPage() {
+  const navigate = useNavigate();
+  const { addToCart, loadCartFromDatabase } = useCart();
   const [orders, setOrders] = useState([]);
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [activeStatus, setActiveStatus] = useState("ALL");
   const [loading, setLoading] = useState(true);
+  const [reorderLoadingId, setReorderLoadingId] = useState(null);
+  const [cancelTarget, setCancelTarget] = useState(null);
+  const [cancelLoading, setCancelLoading] = useState(false);
+  const [notice, setNotice] = useState({
+  open: false,
+  type: "success",
+  title: "",
+  message: "",
+});
+  const [reviewTarget, setReviewTarget] = useState(null);
+  const [reviewForm, setReviewForm] = useState({
+  orderItemId: "",
+  rating: 5,
+  comment: "",
+});
+  const [reviewLoading, setReviewLoading] = useState(false);
 
   const formatMoney = (value) =>
     Number(value || 0).toLocaleString("vi-VN") + "đ";
@@ -229,6 +272,323 @@ function OrderHistoryPage() {
       console.error("Lỗi xem chi tiết đơn hàng:", error);
     }
   };
+  const openReviewModal = async (order) => {
+  try {
+    let fullOrder = order;
+    let items = getOrderItems(order);
+
+    if (items.length === 0 && order.id) {
+      fullOrder = await getOrderDetail(order.id);
+      items = getOrderItems(fullOrder);
+    }
+
+    if (!items || items.length === 0) {
+      toast.error("Không tìm thấy món ăn trong đơn hàng này.");
+      return;
+    }
+
+    setReviewTarget({
+      ...order,
+      ...fullOrder,
+      items,
+    });
+
+    setReviewForm({
+      orderItemId: String(items[0].id),
+      rating: 5,
+      comment: "",
+    });
+  } catch (error) {
+    console.error("Lỗi mở đánh giá:", error);
+    toast.error("Không thể mở đánh giá đơn hàng.");
+  }
+};
+
+  const validateReviewBeforeSubmit = (rating, comment) => {
+  const text = normalizeReviewText(comment);
+  const positiveText = removeNegativePhrases(text);
+
+  const positiveWords = [
+    "ngon",
+    "rat ngon",
+    "tuyet voi",
+    "xuat sac",
+    "hai long",
+    "thich",
+    "se mua lai",
+    "dang tien",
+    "tot",
+    "hap dan",
+    "vua mieng",
+    "de an",
+  ];
+
+  const negativeWords = [
+    "te",
+    "qua te",
+    "khong ngon",
+    "chua ngon",
+    "khong duoc ngon",
+    "khong tot",
+    "that vong",
+    "nguoi",
+    "qua man",
+    "qua nhat",
+    "kho an",
+    "kem",
+    "khong hai long",
+    "chan",
+    "hoi",
+    "khong dang tien",
+  ];
+
+  if (!comment || comment.trim().length < 5) {
+    return "Vui lòng nhập nhận xét ít nhất 5 ký tự.";
+  }
+
+  if (rating <= 2 && hasKeyword(positiveText, positiveWords)) {
+    return "Bạn đang chọn số sao thấp nhưng nội dung lại đang khen món ăn.";
+  }
+
+  if (rating >= 4 && hasKeyword(text, negativeWords)) {
+    return "Bạn đang chọn số sao cao nhưng nội dung lại đang chê món ăn.";
+  }
+
+  return "";
+};
+
+const normalizeReviewText = (value) => {
+  return (value || "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/đ/g, "d")
+    .replace(/Đ/g, "d")
+    .toLowerCase()
+    .replace(/[^a-z0-9\s]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+};
+
+const hasKeyword = (text, words) => {
+  const value = ` ${text} `;
+
+  return words.some((word) => {
+    const keyword = ` ${normalizeReviewText(word)} `;
+    return value.includes(keyword);
+  });
+};
+
+const removeNegativePhrases = (text) => {
+  const negativeWords = [
+    "te",
+    "qua te",
+    "khong ngon",
+    "chua ngon",
+    "khong duoc ngon",
+    "khong tot",
+    "that vong",
+    "nguoi",
+    "qua man",
+    "qua nhat",
+    "kho an",
+    "kem",
+    "khong hai long",
+    "chan",
+    "hoi",
+    "khong dang tien",
+  ];
+
+  let result = ` ${text} `;
+
+  negativeWords.forEach((word) => {
+    result = result.replace(` ${normalizeReviewText(word)} `, " ");
+  });
+
+  return result.replace(/\s+/g, " ").trim();
+};
+
+const handleSubmitReview = async () => {
+  if (!reviewTarget) return;
+
+  const rating = Number(reviewForm.rating);
+  const errorMessage = validateReviewBeforeSubmit(
+    rating,
+    reviewForm.comment
+  );
+
+  if (errorMessage) {
+    toast.error(errorMessage);
+    return;
+  }
+
+  try {
+    setReviewLoading(true);
+
+    await createReview({
+      orderId: reviewTarget.id,
+      orderItemId: Number(reviewForm.orderItemId),
+      rating,
+      comment: reviewForm.comment.trim(),
+    });
+
+    toast.success("Đánh giá món ăn thành công!");
+    setReviewTarget(null);
+  } catch (error) {
+    console.error("Lỗi gửi đánh giá:", error);
+
+    toast.error(
+      error?.response?.data?.message || "Không thể gửi đánh giá."
+    );
+  } finally {
+    setReviewLoading(false);
+  }
+};
+  const handleReorder = async (order) => {
+  if (!canReorderOrder(order)) {
+    showNotice(
+      "error",
+      "Không thể đặt lại",
+      "Chỉ có thể đặt lại đơn hàng đã hoàn thành."
+    );
+    return;
+  }
+
+  try {
+    setReorderLoadingId(order.id);
+
+    let fullOrder = order;
+    let items = getOrderItems(order);
+
+    if (items.length === 0 && order.id) {
+      fullOrder = await getOrderDetail(order.id);
+      items = getOrderItems(fullOrder);
+    }
+
+    if (!items || items.length === 0) {
+      showNotice(
+        "error",
+        "Không thể đặt lại",
+        "Không tìm thấy món ăn trong đơn hàng này."
+      );
+      return;
+    }
+
+    for (const item of items) {
+      const foodId = getFoodId(item);
+      const quantity = Number(item.quantity || 1);
+
+      if (!foodId) {
+        console.warn("Không tìm thấy foodId của món:", item);
+        continue;
+      }
+
+      await addToCart(
+        {
+          id: foodId,
+          foodItemId: foodId,
+          name: getItemName(item),
+          imageUrl: getItemImage(item),
+          price: item.unitPrice || item.price || 0,
+        },
+        quantity
+      );
+    }
+
+    await loadCartFromDatabase();
+
+    navigate("/cart");
+  } catch (error) {
+    console.error("Lỗi đặt lại đơn hàng:", error);
+
+    showNotice(
+      "error",
+      "Đặt lại thất bại",
+      "Không thể đặt lại đơn hàng. Vui lòng thử lại."
+    );
+  } finally {
+    setReorderLoadingId(null);
+  }
+};
+  const showNotice = (type, title, message) => {
+  setNotice({
+    open: true,
+    type,
+    title,
+    message,
+  });
+};
+
+const closeNotice = () => {
+  setNotice({
+    open: false,
+    type: "success",
+    title: "",
+    message: "",
+  });
+};
+  const handleCancelOrder = (order) => {
+  if (!canUserCancelOrder(order)) {
+    showNotice(
+      "error",
+      "Không thể hủy đơn",
+      "Chỉ có thể hủy đơn COD khi đơn hàng đang chờ xác nhận."
+    );
+    return;
+  }
+
+  setCancelTarget(order);
+};
+  const confirmCancelOrder = async () => {
+  if (!cancelTarget) return;
+
+  try {
+    setCancelLoading(true);
+
+    const updatedOrder = await cancelOrder(
+      cancelTarget.id,
+      "Khách hàng đã hủy đơn khi đơn hàng đang chờ xác nhận"
+    );
+
+    setOrders((prev) =>
+      prev.map((item) =>
+        item.id === updatedOrder.id
+          ? {
+              ...item,
+              ...updatedOrder,
+              items: item.items,
+            }
+          : item
+      )
+    );
+
+    if (selectedOrder?.id === updatedOrder.id) {
+      setSelectedOrder((prev) => ({
+        ...prev,
+        ...updatedOrder,
+      }));
+    }
+
+    setCancelTarget(null);
+
+    showNotice(
+      "success",
+      "Hủy đơn thành công",
+      "Đơn hàng của bạn đã được hủy thành công."
+    );
+  } catch (error) {
+    console.error("Lỗi hủy đơn hàng:", error);
+
+    setCancelTarget(null);
+
+    showNotice(
+      "error",
+      "Hủy đơn thất bại",
+      error?.response?.data?.message || "Không thể hủy đơn hàng."
+    );
+  } finally {
+    setCancelLoading(false);
+  }
+};
 
   useEffect(() => {
     loadOrders();
@@ -332,6 +692,10 @@ function OrderHistoryPage() {
                   formatDate={formatDate}
                   address={getShippingAddress(order)}
                   onViewDetail={() => viewDetail(order.id)}
+                  onCancel={() => handleCancelOrder(order)}
+                  onReorder={() => handleReorder(order)}
+                  reorderLoading={reorderLoadingId === order.id}
+                  onReview={() => openReviewModal(order)}
                 />
               ))}
             </div>
@@ -348,6 +712,38 @@ function OrderHistoryPage() {
           />
         )}
       </main>
+      {cancelTarget && (
+  <ConfirmActionModal
+    title="Xác nhận hủy đơn"
+    message={`Bạn có chắc muốn hủy đơn ${
+      cancelTarget.orderCode || `#${cancelTarget.id}`
+    } không?`}
+    confirmText={cancelLoading ? "Đang hủy..." : "Xác nhận hủy"}
+    cancelText="Quay lại"
+    loading={cancelLoading}
+    onConfirm={confirmCancelOrder}
+    onClose={() => !cancelLoading && setCancelTarget(null)}
+  />
+)}
+
+{notice.open && (
+  <NoticeModal
+    type={notice.type}
+    title={notice.title}
+    message={notice.message}
+    onClose={closeNotice}
+  />
+)}
+{reviewTarget && (
+  <ReviewModal
+    order={reviewTarget}
+    reviewForm={reviewForm}
+    setReviewForm={setReviewForm}
+    loading={reviewLoading}
+    onSubmit={handleSubmitReview}
+    onClose={() => !reviewLoading && setReviewTarget(null)}
+  />
+)}
 
       <Footer />
     </>
@@ -363,6 +759,10 @@ function OrderCard({
   formatDate,
   address,
   onViewDetail,
+  onCancel,
+  onReorder,
+  reorderLoading,
+  onReview,
 }) {
   const extraItems = Math.max(itemsCount - 1, 0);
   const image = getItemImage(firstItem);
@@ -427,24 +827,51 @@ function OrderCard({
         </div>
 
         <div className="order-actions">
-          <button
-            type="button"
-            className="primary-action"
-            onClick={onViewDetail}
-          >
-            Xem chi tiết
-          </button>
+  <button
+    type="button"
+    className="primary-action"
+    onClick={onViewDetail}
+  >
+    Xem chi tiết
+  </button>
 
-          <button type="button" className="secondary-action">
-            Đặt lại
-          </button>
+  {canUserCancelOrder(order) && (
+    <button
+      type="button"
+      className="cancel-order-action"
+      onClick={onCancel}
+    >
+      Hủy đơn
+    </button>
+  )}
 
-          {order.status === "COMPLETED" && (
-            <button type="button" className="review-action">
-              Đánh giá
-            </button>
-          )}
-        </div>
+  {isPaidVnpayOrder(order) && (
+    <p className="vnpay-cancel-note">
+      Đơn đã thanh toán VNPay, vui lòng liên hệ cửa hàng nếu cần hủy/hoàn tiền.
+    </p>
+  )}
+
+  {canReorderOrder(order) && (
+  <button
+    type="button"
+    className="secondary-action"
+    onClick={onReorder}
+    disabled={reorderLoading}
+  >
+    {reorderLoading ? "Đang thêm..." : "Đặt lại"}
+  </button>
+)}
+
+  {normalizeStatus(order.status) === "COMPLETED" && (
+  <button
+    type="button"
+    className="review-action"
+    onClick={onReview}
+  >
+    Đánh giá
+  </button>
+)}
+</div>
       </div>
     </article>
   );
@@ -599,14 +1026,23 @@ function OrderDetailModal({
           </div>
 
           <div className="total-box">
-            <Row label="Tạm tính" value={formatMoney(order.subtotal)} />
-            <Row label="Phí giao hàng" value={formatMoney(order.shippingFee)} />
-            <Row
-              label="Tổng cộng"
-              value={formatMoney(order.totalAmount)}
-              bold
-            />
-          </div>
+  {order.voucherCode && (
+    <Row label="Mã giảm giá" value={order.voucherCode} />
+  )}
+
+  <Row label="Tạm tính" value={formatMoney(order.subtotal)} />
+
+  <Row label="Phí giao hàng" value={formatMoney(order.shippingFee)} />
+
+  {Number(order.discountAmount || 0) > 0 && (
+    <Row
+      label="Giảm giá voucher"
+      value={`-${formatMoney(order.discountAmount)}`}
+    />
+  )}
+
+  <Row label="Tổng cộng" value={formatMoney(order.totalAmount)} bold />
+</div>  
         </div>
       </div>
     </div>
@@ -627,6 +1063,215 @@ function Row({ label, value, bold }) {
     <div className={`total-row ${bold ? "bold" : ""}`}>
       <span>{label}</span>
       <strong>{value}</strong>
+    </div>
+  );
+}
+function ConfirmActionModal({
+  title,
+  message,
+  confirmText,
+  cancelText,
+  loading,
+  onConfirm,
+  onClose,
+}) {
+  return (
+    <div className="custom-modal-overlay" onClick={onClose}>
+      <div
+        className="custom-modal-box"
+        onClick={(event) => event.stopPropagation()}
+      >
+        <div className="custom-modal-icon warning">!</div>
+
+        <h3>{title}</h3>
+        <p>{message}</p>
+
+        <div className="custom-modal-actions">
+          <button
+            type="button"
+            className="modal-secondary-btn"
+            onClick={onClose}
+            disabled={loading}
+          >
+            {cancelText}
+          </button>
+
+          <button
+            type="button"
+            className="modal-danger-btn"
+            onClick={onConfirm}
+            disabled={loading}
+          >
+            {confirmText}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function NoticeModal({ type, title, message, onClose }) {
+  return (
+    <div className="custom-modal-overlay" onClick={onClose}>
+      <div
+        className="custom-modal-box notice"
+        onClick={(event) => event.stopPropagation()}
+      >
+        <div className={`custom-modal-icon ${type}`}>
+          {type === "success" ? "✓" : "!"}
+        </div>
+
+        <h3>{title}</h3>
+        <p>{message}</p>
+
+        <div className="custom-modal-actions center">
+          <button
+            type="button"
+            className={type === "success" ? "modal-primary-btn" : "modal-danger-btn"}
+            onClick={onClose}
+          >
+            Đóng
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+function ReviewModal({
+  order,
+  reviewForm,
+  setReviewForm,
+  loading,
+  onSubmit,
+  onClose,
+}) {
+  const items = getOrderItems(order);
+  const selectedItem = items.find(
+    (item) => String(item.id) === String(reviewForm.orderItemId)
+  );
+
+  return (
+    <div className="review-modal-overlay" onClick={onClose}>
+      <div
+        className="review-modal-box"
+        onClick={(event) => event.stopPropagation()}
+      >
+        <div className="review-modal-header">
+          <div>
+            <span>Đánh giá món ăn</span>
+            <h3>{order.orderCode || `#${order.id}`}</h3>
+          </div>
+
+          <button type="button" onClick={onClose} disabled={loading}>
+            ×
+          </button>
+        </div>
+
+        <div className="review-modal-body">
+          <label>Chọn món cần đánh giá</label>
+
+          <select
+            value={reviewForm.orderItemId}
+            onChange={(event) =>
+              setReviewForm((prev) => ({
+                ...prev,
+                orderItemId: event.target.value,
+              }))
+            }
+            disabled={loading}
+          >
+            {items.map((item) => (
+              <option key={item.id} value={item.id}>
+                {getItemName(item)} - SL: {item.quantity}
+              </option>
+            ))}
+          </select>
+
+          {selectedItem && (
+            <div className="review-food-preview">
+              <img
+                src={getItemImage(selectedItem)}
+                alt={getItemName(selectedItem)}
+                onError={(event) => {
+                  event.currentTarget.src = FOOD_PLACEHOLDER;
+                }}
+              />
+
+              <div>
+                <strong>{getItemName(selectedItem)}</strong>
+                <span>Số lượng: {selectedItem.quantity}</span>
+              </div>
+            </div>
+          )}
+
+          <label>Số sao đánh giá</label>
+
+          <div className="review-stars">
+            {[1, 2, 3, 4, 5].map((star) => (
+              <button
+                key={star}
+                type="button"
+                className={star <= reviewForm.rating ? "active" : ""}
+                onClick={() =>
+                  setReviewForm((prev) => ({
+                    ...prev,
+                    rating: star,
+                  }))
+                }
+                disabled={loading}
+              >
+                ★
+              </button>
+            ))}
+          </div>
+
+          <div className="review-rating-hint">
+            {reviewForm.rating <= 2 &&
+              "Bạn đang đánh giá thấp, nội dung nên phản ánh điểm chưa hài lòng."}
+
+            {reviewForm.rating === 3 &&
+              "Bạn đang đánh giá trung bình, có thể góp ý cả điểm tốt và điểm cần cải thiện."}
+
+            {reviewForm.rating >= 4 &&
+              "Bạn đang đánh giá cao, nội dung nên phù hợp với trải nghiệm tích cực."}
+          </div>
+
+          <label>Lời nhắn đánh giá</label>
+
+          <textarea
+            rows={4}
+            placeholder="Ví dụ: Món ăn ngon, giao nhanh, đóng gói sạch sẽ..."
+            value={reviewForm.comment}
+            onChange={(event) =>
+              setReviewForm((prev) => ({
+                ...prev,
+                comment: event.target.value,
+              }))
+            }
+            disabled={loading}
+          />
+        </div>
+
+        <div className="review-modal-actions">
+          <button
+            type="button"
+            className="review-cancel-btn"
+            onClick={onClose}
+            disabled={loading}
+          >
+            Hủy
+          </button>
+
+          <button
+            type="button"
+            className="review-submit-btn"
+            onClick={onSubmit}
+            disabled={loading}
+          >
+            {loading ? "Đang gửi..." : "Gửi đánh giá"}
+          </button>
+        </div>
+      </div>
     </div>
   );
 }

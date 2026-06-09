@@ -21,3 +21,25 @@ export const getOrderDetail = async (id) => {
   const res = await axios.get(`${API_URL}/${id}`, getAuthHeader());
   return res.data;
 };
+
+export const cancelOrder = async (id, cancelReason) => {
+  const res = await axios.patch(
+    `${API_URL}/${id}/cancel`,
+    {
+      cancelReason,
+    },
+    getAuthHeader()
+  );
+
+  return res.data;
+};
+
+export const createReview = async (payload) => {
+  const res = await axios.post(
+    "http://localhost:8080/api/user/reviews",
+    payload,
+    getAuthHeader()
+  );
+
+  return res.data;
+};

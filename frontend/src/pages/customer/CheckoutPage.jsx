@@ -9,7 +9,7 @@ import Footer from "../../components/common/Footer";
 
 import { useCart } from "../../context/CartContext";
 import { useAuth } from "../../context/AuthContext";
-import { checkout } from "../../services/checkoutApi";
+import { checkout, userVoucherAPI } from "../../services/checkoutApi";
 import GoogleAddressPicker from "../../components/customer/GoogleAddressPicker";
 
 import "./CheckoutPage.css";
@@ -22,6 +22,11 @@ const CheckoutPage = () => {
   const token = localStorage.getItem("token");
   const GOOGLE_MAPS_API_KEY = process.env.REACT_APP_GOOGLE_MAPS_API_KEY;
 
+  const [voucherCode, setVoucherCode] = useState("");
+  const [appliedVoucher, setAppliedVoucher] = useState(null);
+  const [voucherLoading, setVoucherLoading] = useState(false);
+  const [voucherError, setVoucherError] = useState("");
+
   const [form, setForm] = useState({
     shippingName: user?.fullName || "",
     shippingPhone: user?.phone || "",
@@ -31,14 +36,15 @@ const CheckoutPage = () => {
     shippingPlaceId: "",
     shippingDistanceKm: null,
     note: "",
-    paymentMethod: "COD"
+    paymentMethod: "COD",
   });
 
   const [showConfirm, setShowConfirm] = useState(false);
   const [loading, setLoading] = useState(false);
 
   const shippingFee = totalPrice >= 200000 ? 0 : 20000;
-  const finalTotal = totalPrice + shippingFee;
+  const discountAmount = Number(appliedVoucher?.discountAmount || 0);
+  const finalTotal = Math.max(0, totalPrice + shippingFee - discountAmount);
 
   const formatCurrency = (value) =>
     Number(value || 0).toLocaleString("vi-VN") + "đ";
@@ -83,15 +89,16 @@ const CheckoutPage = () => {
 
     setForm((prev) => ({
       ...prev,
-      [name]: value
+      [name]: value,
     }));
   };
+
   const handleAddressChange = (addressData) => {
-  setForm((prev) => ({
-    ...prev,
-    ...addressData,
-  }));
-};
+    setForm((prev) => ({
+      ...prev,
+      ...addressData,
+    }));
+  };
 
   const handleContinueToConfirm = (e) => {
     e.preventDefault();
@@ -100,6 +107,51 @@ const CheckoutPage = () => {
 
     setShowConfirm(true);
     window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  const handleApplyVoucher = async () => {
+    const code = voucherCode.trim();
+
+    if (!code) {
+      setVoucherError("Vui lòng nhập mã voucher");
+      setAppliedVoucher(null);
+      return;
+    }
+
+    if (!cartItems || cartItems.length === 0) {
+      setVoucherError("Giỏ hàng đang trống, không thể áp dụng voucher");
+      setAppliedVoucher(null);
+      return;
+    }
+
+    try {
+      setVoucherLoading(true);
+      setVoucherError("");
+
+      const res = await userVoucherAPI.applyVoucher({
+        code,
+        orderAmount: totalPrice,
+      });
+
+      setAppliedVoucher(res.data);
+      setVoucherCode(res.data.code);
+      toast.success("Áp dụng voucher thành công!");
+    } catch (error) {
+      console.error("Lỗi áp dụng voucher:", error);
+
+      setAppliedVoucher(null);
+      setVoucherError(
+        error?.response?.data?.message || "Không thể áp dụng voucher"
+      );
+    } finally {
+      setVoucherLoading(false);
+    }
+  };
+
+  const handleRemoveVoucher = () => {
+    setAppliedVoucher(null);
+    setVoucherCode("");
+    setVoucherError("");
   };
 
   const handleSubmit = async () => {
@@ -119,9 +171,11 @@ const CheckoutPage = () => {
         note: form.note,
         paymentMethod: form.paymentMethod,
 
+        voucherCode: appliedVoucher?.code || null,
+
         items: cartItems,
         shippingFee,
-        totalPrice: finalTotal
+        totalPrice: finalTotal,
       };
 
       const data = await checkout(payload, token);
@@ -136,7 +190,9 @@ const CheckoutPage = () => {
       const successOrder = {
         orderCode: data?.orderCode || "",
         totalAmount: data?.totalAmount ?? finalTotal,
-        paymentMethod: form.paymentMethod
+        paymentMethod: form.paymentMethod,
+        voucherCode: appliedVoucher?.code || null,
+        discountAmount,
       };
 
       sessionStorage.setItem(
@@ -146,7 +202,7 @@ const CheckoutPage = () => {
 
       navigate("/order-success", {
         replace: true,
-        state: successOrder
+        state: successOrder,
       });
     } catch (err) {
       console.error("Checkout error:", err);
@@ -240,11 +296,11 @@ const CheckoutPage = () => {
                       <div className="form-group">
                         <label>Địa chỉ giao hàng *</label>
 
-                          <GoogleAddressPicker
-                            apiKey={GOOGLE_MAPS_API_KEY}
-                            value={form.shippingAddress}
-                            onChange={handleAddressChange}
-                         />
+                        <GoogleAddressPicker
+                          apiKey={GOOGLE_MAPS_API_KEY}
+                          value={form.shippingAddress}
+                          onChange={handleAddressChange}
+                        />
                       </div>
 
                       <div className="form-group">
@@ -337,31 +393,41 @@ const CheckoutPage = () => {
                       </div>
 
                       <div className="confirm-item confirm-item-full">
-  <span>Địa chỉ giao hàng</span>
-  <strong>{form.shippingAddress}</strong>
-</div>
+                        <span>Địa chỉ giao hàng</span>
+                        <strong>{form.shippingAddress}</strong>
+                      </div>
 
-{form.shippingLat && form.shippingLng && (
-  <div className="confirm-item">
-    <span>Tọa độ giao hàng</span>
-    <strong>
-      {Number(form.shippingLat).toFixed(6)},{" "}
-      {Number(form.shippingLng).toFixed(6)}
-    </strong>
-  </div>
-)}
+                      {form.shippingLat && form.shippingLng && (
+                        <div className="confirm-item">
+                          <span>Tọa độ giao hàng</span>
+                          <strong>
+                            {Number(form.shippingLat).toFixed(6)},{" "}
+                            {Number(form.shippingLng).toFixed(6)}
+                          </strong>
+                        </div>
+                      )}
 
-{form.shippingDistanceKm && (
-  <div className="confirm-item">
-    <span>Khoảng cách dự kiến</span>
-    <strong>{form.shippingDistanceKm} km</strong>
-  </div>
-)}
+                      {form.shippingDistanceKm && (
+                        <div className="confirm-item">
+                          <span>Khoảng cách dự kiến</span>
+                          <strong>{form.shippingDistanceKm} km</strong>
+                        </div>
+                      )}
 
-<div className="confirm-item">
-  <span>Thanh toán</span>
-  <strong>{paymentLabel}</strong>
-</div>
+                      <div className="confirm-item">
+                        <span>Thanh toán</span>
+                        <strong>{paymentLabel}</strong>
+                      </div>
+
+                      {appliedVoucher && (
+                        <div className="confirm-item">
+                          <span>Voucher</span>
+                          <strong>
+                            {appliedVoucher.code} - Giảm{" "}
+                            {formatCurrency(discountAmount)}
+                          </strong>
+                        </div>
+                      )}
 
                       <div className="confirm-item">
                         <span>Ghi chú</span>
@@ -377,6 +443,7 @@ const CheckoutPage = () => {
                           <span>
                             {item.quantity}x {getItemName(item)}
                           </span>
+
                           <strong>
                             {formatCurrency(getItemPrice(item) * item.quantity)}
                           </strong>
@@ -409,6 +476,7 @@ const CheckoutPage = () => {
 
               <div className="checkout-summary card">
                 <h3>Đơn hàng của bạn</h3>
+
                 <p className="summary-caption">
                   Thông tin giá được hiển thị minh bạch trước khi đặt món.
                 </p>
@@ -427,6 +495,62 @@ const CheckoutPage = () => {
                   ))}
                 </div>
 
+                <div className="voucher-box">
+                  <div className="voucher-title-row">
+                    <div>
+                      <strong>Mã giảm giá</strong>
+                      <p>Nhập voucher để được giảm giá đơn hàng</p>
+                    </div>
+
+                    {appliedVoucher && (
+                      <button
+                        type="button"
+                        className="voucher-remove-btn"
+                        onClick={handleRemoveVoucher}
+                      >
+                        Bỏ mã
+                      </button>
+                    )}
+                  </div>
+
+                  <div className="voucher-input-row">
+                    <input
+                      value={voucherCode}
+                      onChange={(event) => {
+                        setVoucherCode(event.target.value.toUpperCase());
+                        setVoucherError("");
+                      }}
+                      placeholder="Nhập mã voucher..."
+                      disabled={voucherLoading || !!appliedVoucher}
+                    />
+
+                    <button
+                      type="button"
+                      onClick={handleApplyVoucher}
+                      disabled={
+                        voucherLoading ||
+                        !!appliedVoucher ||
+                        cartItems.length === 0
+                      }
+                    >
+                      {voucherLoading ? "Đang áp..." : "Áp dụng"}
+                    </button>
+                  </div>
+
+                  {voucherError && (
+                    <div className="voucher-message error">{voucherError}</div>
+                  )}
+
+                  {appliedVoucher && (
+                    <div className="voucher-message success">
+                      <strong>{appliedVoucher.code}</strong> -{" "}
+                      {appliedVoucher.name}
+                      <br />
+                      Đã giảm {formatCurrency(appliedVoucher.discountAmount)}
+                    </div>
+                  )}
+                </div>
+
                 <div className="summary-divider" />
 
                 <div className="summary-row">
@@ -437,9 +561,18 @@ const CheckoutPage = () => {
                 <div className="summary-row">
                   <span>Phí giao hàng</span>
                   <span>
-                    {shippingFee === 0 ? "Miễn phí" : formatCurrency(shippingFee)}
+                    {shippingFee === 0
+                      ? "Miễn phí"
+                      : formatCurrency(shippingFee)}
                   </span>
                 </div>
+
+                {discountAmount > 0 && (
+                  <div className="summary-row discount-row">
+                    <span>Giảm giá voucher</span>
+                    <span>-{formatCurrency(discountAmount)}</span>
+                  </div>
+                )}
 
                 <div className="summary-divider" />
 
@@ -449,12 +582,6 @@ const CheckoutPage = () => {
                     {formatCurrency(finalTotal)}
                   </strong>
                 </div>
-
-                {/* <div className="checkout-assurance">
-                  <span>🔒 Bảo mật thanh toán</span>
-                  <span>💬 Hỗ trợ sau đặt hàng</span>
-                  <span>🛵 Theo dõi trạng thái đơn</span>
-                </div> */}
               </div>
             </div>
           </form>

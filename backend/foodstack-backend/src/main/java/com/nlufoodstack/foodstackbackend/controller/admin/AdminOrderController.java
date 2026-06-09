@@ -180,8 +180,9 @@ public class AdminOrderController {
         response.setShippingDistanceKm(order.shippingDistanceKm);
 
         response.setNote(order.note);
+        response.setVoucherCode(order.voucherCode);
+        response.setDiscountAmount(order.discountAmount);
         response.setCancelReason(order.cancelReason);
-
         response.setCreatedAt(order.createdAt);
         response.setUpdatedAt(order.updatedAt);
 
