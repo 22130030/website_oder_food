@@ -148,7 +148,7 @@ const AdminStatistics = () => {
   ];
 
   return (
-    <AdminLayout title="📈 Thống kê & Báo cáo">
+    <AdminLayout title="Thống kê & Báo cáo">
       {loading ? (
         <div className="card" style={{ padding: 28 }}>
           Đang tải dữ liệu thống kê...

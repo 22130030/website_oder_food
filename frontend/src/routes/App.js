@@ -1,11 +1,19 @@
 import '../App.css';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  Navigate,
+  useLocation,
+} from 'react-router-dom';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+
 import HomePage from '../pages/customer/HomePage';
 import { AuthProvider } from '../context/AuthContext';
 import { CartProvider } from '../context/CartContext';
 import ScrollToTop from '../components/common/ScrollToTop';
+
 import FoodDetailPage from '../pages/customer/FoodDetailPage';
 import LoginPage from '../pages/auth/LoginPage';
 import RegisterPage from '../pages/auth/RegisterPage';
@@ -16,23 +24,59 @@ import OrderSuccessPage from '../pages/customer/OrderSuccessPage';
 import ChatPage from '../pages/customer/ChatPage';
 import MenuPage from '../pages/customer/MenuPage';
 import OrderDetailPage from '../pages/customer/OrderDetailPage';
-import OrderHistoryPage from "../pages/customer/OrderHistoryPage";
+import OrderHistoryPage from '../pages/customer/OrderHistoryPage';
 import ProfilePage from '../pages/customer/ProfilePage';
+import VnpayReturnPage from '../pages/customer/VnpayReturnPage';
+
 import AdminDashboard from '../pages/admin/AdminDashboard';
 import AdminFoodManagement from '../pages/admin/AdminFoodManagement';
 import AdminOrderManagement from '../pages/admin/AdminOrderManagement';
 import AdminUserManagement from '../pages/admin/AdminUserManagement';
 import AdminChatManagement from '../pages/admin/AdminChatManagement';
 import AdminStatistics from '../pages/admin/AdminStatistics';
-import VnpayReturnPage from '../pages/customer/VnpayReturnPage';
 import AdminVoucherManagement from '../pages/admin/AdminVoucherManagement';
+
+const getStoredUserId = () => {
+  const userRaw = localStorage.getItem('user');
+
+  if (!userRaw) return null;
+
+  try {
+    const user = JSON.parse(userRaw);
+    return user?.id || user?.userId || user?.accountId || null;
+  } catch (error) {
+    return null;
+  }
+};
+
+const RequireLogin = ({ children }) => {
+  const location = useLocation();
+
+  const token = localStorage.getItem('token');
+  const userId = getStoredUserId();
+
+  if (!token || !userId) {
+    return (
+      <Navigate
+        to="/login"
+        replace
+        state={{
+          from: location.pathname,
+        }}
+      />
+    );
+  }
+
+  return children;
+};
 
 function App() {
   return (
     <Router>
       <AuthProvider>
         <CartProvider>
-            <ScrollToTop />
+          <ScrollToTop />
+
           <Routes>
             <Route path="/" element={<LoginPage />} />
             <Route path="/login" element={<LoginPage />} />
@@ -41,7 +85,16 @@ function App() {
 
             <Route path="/home" element={<HomePage />} />
             <Route path="/cart" element={<CartPage />} />
-            <Route path="/chat" element={<ChatPage />} />
+
+            <Route
+              path="/chat"
+              element={
+                <RequireLogin>
+                  <ChatPage />
+                </RequireLogin>
+              }
+            />
+
             <Route path="/checkout" element={<CheckoutPage />} />
             <Route path="/vnpay-return" element={<VnpayReturnPage />} />
             <Route path="/order-success" element={<OrderSuccessPage />} />

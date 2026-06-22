@@ -42,13 +42,8 @@ const AdminChatManagement = () => {
       d1.getMonth() === d2.getMonth() &&
       d1.getFullYear() === d2.getFullYear();
 
-    if (isSameDate(date, today)) {
-      return 'Hôm nay';
-    }
-
-    if (isSameDate(date, yesterday)) {
-      return 'Hôm qua';
-    }
+    if (isSameDate(date, today)) return 'Hôm nay';
+    if (isSameDate(date, yesterday)) return 'Hôm qua';
 
     const days = ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'];
     const dayName = days[date.getDay()];
@@ -80,13 +75,18 @@ const AdminChatManagement = () => {
       const res = await chatAPI.getConversations();
       const data = res.data || [];
 
-      setConversations(data.map(item => {
-        if (activeConvRef.current && item.customerId === activeConvRef.current.customerId) {
-          return { ...item, unreadCount: 0 };
-        }
+      setConversations(
+        data.map((item) => {
+          if (
+            activeConvRef.current &&
+            item.customerId === activeConvRef.current.customerId
+          ) {
+            return { ...item, unreadCount: 0 };
+          }
 
-        return item;
-      }));
+          return item;
+        })
+      );
     } catch (err) {
       console.error('Lỗi load conversations:', err);
     }
@@ -111,7 +111,8 @@ const AdminChatManagement = () => {
             newMessage.customerId === currentActive.customerId &&
             newMessage.senderId === currentActive.customerId
           ) {
-            chatAPI.markAdminConversationRead(currentActive.customerId)
+            chatAPI
+              .markAdminConversationRead(currentActive.customerId)
               .then(() => {
                 loadConversations();
                 window.dispatchEvent(new Event('admin-chat-read'));
@@ -146,10 +147,13 @@ const AdminChatManagement = () => {
     const client = stompClientRef.current;
     if (!client || !client.connected) return;
 
-    const subscription = client.subscribe(`/topic/chat/${activeConv.customerId}`, (message) => {
-      const newMessage = JSON.parse(message.body);
-      setMessages(prev => sortMessagesByTimeAsc([...prev, newMessage]));
-    });
+    const subscription = client.subscribe(
+      `/topic/chat/${activeConv.customerId}`,
+      (message) => {
+        const newMessage = JSON.parse(message.body);
+        setMessages((prev) => sortMessagesByTimeAsc([...prev, newMessage]));
+      }
+    );
 
     return () => {
       subscription.unsubscribe();
@@ -171,8 +175,8 @@ const AdminChatManagement = () => {
     setReplyText('');
     setMessages([]);
 
-    setConversations(prev =>
-      prev.map(item =>
+    setConversations((prev) =>
+      prev.map((item) =>
         item.customerId === conv.customerId
           ? { ...item, unreadCount: 0 }
           : item
@@ -189,7 +193,6 @@ const AdminChatManagement = () => {
     try {
       await chatAPI.markAdminConversationRead(conv.customerId);
       await loadConversations();
-
       window.dispatchEvent(new Event('admin-chat-read'));
     } catch (err) {
       console.error('Lỗi mark read admin:', err);
@@ -281,61 +284,75 @@ const AdminChatManagement = () => {
   return (
     <AdminLayout title="Quản lý Chat">
       <div className="admin-chat-layout card">
-
         <div className="conv-list">
           <div className="conv-list-header">
-            <h3>Hội thoại</h3>
+            <div>
+              <h3>Hội thoại khách hàng</h3>
+              <p>Trao đổi và hỗ trợ khách hàng nhanh chóng</p>
+            </div>
 
             {getTotalUnread() > 0 && (
-              <span className="badge badge-danger">
-                {getTotalUnread()} mới
-              </span>
+              <span className="chat-pill-badge">{getTotalUnread()} mới</span>
             )}
           </div>
 
-          {conversations.map(conv => (
-            <div
-              key={conv.customerId}
-              className={`conv-item ${activeConv?.customerId === conv.customerId ? 'active' : ''}`}
-              onClick={() => selectConversation(conv)}
-            >
-              <div className="conv-avatar">
-                {conv.customerName?.charAt(0)}
-              </div>
+          <div className="conv-list-body">
+            {conversations.length > 0 ? (
+              conversations.map((conv) => (
+                <div
+                  key={conv.customerId}
+                  className={`conv-item ${
+                    activeConv?.customerId === conv.customerId ? 'active' : ''
+                  }`}
+                  onClick={() => selectConversation(conv)}
+                >
+                  <div className="conv-avatar">
+                    {conv.customerName?.charAt(0)?.toUpperCase()}
+                  </div>
 
-              <div className="conv-info">
-                <div className="conv-name-row">
-                  <strong>{conv.customerName}</strong>
-                  <span className="conv-time">
-                    {formatTime(conv.lastSentAt)}
-                  </span>
+                  <div className="conv-info">
+                    <div className="conv-name-row">
+                      <strong>{conv.customerName}</strong>
+                      <span className="conv-time">
+                        {formatTime(conv.lastSentAt)}
+                      </span>
+                    </div>
+
+                    <p className="conv-last-msg">
+                      {conv.lastMessage || 'Chưa có tin nhắn'}
+                    </p>
+                  </div>
+
+                  {Number(conv.unreadCount || 0) > 0 && (
+                    <span className="unread-badge">{conv.unreadCount}</span>
+                  )}
                 </div>
-
-                <p className="conv-last-msg">{conv.lastMessage}</p>
+              ))
+            ) : (
+              <div className="conv-empty">
+                <div className="conv-empty-icon">💬</div>
+                <p>Chưa có hội thoại nào</p>
               </div>
-
-              {Number(conv.unreadCount || 0) > 0 && (
-                <span className="unread-badge">
-                  {conv.unreadCount}
-                </span>
-              )}
-            </div>
-          ))}
+            )}
+          </div>
         </div>
 
         <div className="chat-window">
           {activeConv ? (
             <>
               <div className="chat-window-header">
-                <div className="conv-avatar">
-                  {activeConv.customerName?.charAt(0)}
+                <div className="conv-avatar large">
+                  {activeConv.customerName?.charAt(0)?.toUpperCase()}
                 </div>
 
-                <div>
+                <div className="chat-customer-meta">
                   <strong>{activeConv.customerName}</strong>
-                  <p style={{ fontSize: 12, color: '#aaa' }}>
-                    {activeConv.customerEmail}
-                  </p>
+                  <p>{activeConv.customerEmail}</p>
+                </div>
+
+                <div className="chat-header-status">
+                  <span className="status-dot" />
+                  Đang hỗ trợ
                 </div>
               </div>
 
@@ -346,7 +363,7 @@ const AdminChatManagement = () => {
                   const isImage = msg.messageType === 'IMAGE' && msg.imageUrl;
 
                   return (
-                    <React.Fragment key={msg.id}>
+                    <React.Fragment key={msg.id || `${msg.sentAt}-${index}`}>
                       {shouldShowDateLabel(messages, index) && (
                         <div className="chat-date-label">
                           {formatDateLabel(msg.sentAt)}
@@ -354,15 +371,21 @@ const AdminChatManagement = () => {
                       )}
 
                       <div
-                        className={`message-wrapper ${isAdmin ? 'sent' : 'received'}`}
+                        className={`message-wrapper ${
+                          isAdmin ? 'sent' : 'received'
+                        }`}
                       >
                         {!isAdmin && (
                           <div className="msg-avatar user-avatar">
-                            {activeConv.customerName?.charAt(0)}
+                            {activeConv.customerName?.charAt(0)?.toUpperCase()}
                           </div>
                         )}
 
-                        <div className={`message-bubble ${isAdmin ? 'admin-bubble' : ''} ${isImage ? 'image-bubble' : ''}`}>
+                        <div
+                          className={`message-bubble ${
+                            isAdmin ? 'admin-bubble' : ''
+                          } ${isImage ? 'image-bubble' : ''}`}
+                        >
                           {isImage ? (
                             <img
                               src={getImageSrc(msg.imageUrl)}
@@ -394,14 +417,18 @@ const AdminChatManagement = () => {
                   onChange={handleImageChange}
                 />
 
-                <label htmlFor="chat-image-upload-admin" className="image-upload-btn">
+                <label
+                  htmlFor="chat-image-upload-admin"
+                  className="image-upload-btn"
+                  title="Gửi ảnh"
+                >
                   📷
                 </label>
 
                 <textarea
                   value={replyText}
-                  onChange={e => setReplyText(e.target.value)}
-                  onKeyDown={e => {
+                  onChange={(e) => setReplyText(e.target.value)}
+                  onKeyDown={(e) => {
                     if (e.key === 'Enter' && !e.shiftKey) {
                       e.preventDefault();
                       sendReply();
@@ -412,9 +439,11 @@ const AdminChatManagement = () => {
                 />
 
                 <button
-                  className="btn btn-primary send-btn"
+                  type="button"
+                  className="send-btn"
                   onClick={sendReply}
                   disabled={!replyText.trim()}
+                  title="Gửi tin nhắn"
                 >
                   ➤
                 </button>
@@ -422,9 +451,9 @@ const AdminChatManagement = () => {
             </>
           ) : (
             <div className="chat-placeholder">
-              <div style={{ fontSize: 64, marginBottom: 16 }}>💬</div>
+              <div className="chat-placeholder-icon">💬</div>
               <h3>Chọn một hội thoại để bắt đầu</h3>
-              <p>Bạn có {conversations.length} hội thoại</p>
+              <p>Bạn hiện có {conversations.length} hội thoại khách hàng</p>
             </div>
           )}
         </div>

@@ -1,20 +1,60 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import SockJS from 'sockjs-client';
 import { Client } from '@stomp/stompjs';
+
 import Navbar from '../../components/common/Navbar';
 import Footer from '../../components/common/Footer';
 import { useAuth } from '../../context/AuthContext';
 import { chatAPI } from '../../services/api';
+
 import './ChatPage.css';
 
 const ChatPage = () => {
   const { user } = useAuth();
+  const navigate = useNavigate();
+  const location = useLocation();
+
   const [messages, setMessages] = useState([]);
   const [inputText, setInputText] = useState('');
+
   const stompClientRef = useRef(null);
   const messagesEndRef = useRef(null);
 
-  const customerId = user?.userId || user?.id;
+  const token = localStorage.getItem('token');
+
+  const storedUser = useMemo(() => {
+    const userRaw = localStorage.getItem('user');
+
+    if (!userRaw) return null;
+
+    try {
+      return JSON.parse(userRaw);
+    } catch (error) {
+      return null;
+    }
+  }, []);
+
+  const currentUser = user || storedUser;
+  const customerId =
+    currentUser?.userId || currentUser?.id || currentUser?.accountId || null;
+
+  const redirectToLogin = () => {
+    navigate('/login', {
+      replace: true,
+      state: {
+        from: location.pathname,
+      },
+    });
+  };
+
+  useEffect(() => {
+    if (!token || !customerId) {
+      redirectToLogin();
+    }
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [token, customerId]);
 
   const formatTime = (time) => {
     if (!time) return '';
@@ -74,13 +114,13 @@ const ChatPage = () => {
   };
 
   useEffect(() => {
-    if (!customerId) {
-      console.log('❌ Không có customerId:', user);
+    if (!token || !customerId) {
       return;
     }
 
-    chatAPI.getMessagesByCustomer(customerId)
-      .then(res => {
+    chatAPI
+      .getMessagesByCustomer(customerId)
+      .then((res) => {
         setMessages(sortMessagesByTimeAsc(res.data || []));
 
         return chatAPI.markCustomerChatRead(customerId);
@@ -88,7 +128,7 @@ const ChatPage = () => {
       .then(() => {
         window.dispatchEvent(new Event('customer-chat-read'));
       })
-      .catch(err => console.error('Lỗi load/mark read chat:', err));
+      .catch((err) => console.error('Lỗi load/mark read chat:', err));
 
     const client = new Client({
       webSocketFactory: () => new SockJS('http://localhost:8080/ws-chat'),
@@ -102,14 +142,15 @@ const ChatPage = () => {
 
           const newMessage = JSON.parse(message.body);
 
-          setMessages(prev => sortMessagesByTimeAsc([...prev, newMessage]));
+          setMessages((prev) => sortMessagesByTimeAsc([...prev, newMessage]));
 
           if (newMessage.senderId !== customerId) {
-            chatAPI.markCustomerChatRead(customerId)
+            chatAPI
+              .markCustomerChatRead(customerId)
               .then(() => {
                 window.dispatchEvent(new Event('customer-chat-read'));
               })
-              .catch(err => console.error('Lỗi mark read customer:', err));
+              .catch((err) => console.error('Lỗi mark read customer:', err));
           }
         });
       },
@@ -129,7 +170,7 @@ const ChatPage = () => {
     return () => {
       client.deactivate();
     };
-  }, [customerId, user]);
+  }, [token, customerId]);
 
   useEffect(() => {
     setTimeout(() => {
@@ -141,12 +182,12 @@ const ChatPage = () => {
   }, [messages]);
 
   const sendMessage = () => {
-    const senderId = user?.userId || user?.id;
+    const senderId = customerId;
 
     if (!inputText.trim()) return;
 
-    if (!customerId || !senderId) {
-      alert('Không lấy được userId. Hãy đăng xuất, xóa localStorage rồi đăng nhập lại.');
+    if (!token || !customerId || !senderId) {
+      redirectToLogin();
       return;
     }
 
@@ -156,8 +197,8 @@ const ChatPage = () => {
     }
 
     const message = {
-      customerId: customerId,
-      senderId: senderId,
+      customerId,
+      senderId,
       content: inputText.trim(),
       messageType: 'TEXT',
       imageUrl: null,
@@ -175,11 +216,11 @@ const ChatPage = () => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    const senderId = user?.userId || user?.id;
+    const senderId = customerId;
 
-    if (!customerId || !senderId) {
-      alert('Không lấy được userId.');
+    if (!token || !customerId || !senderId) {
       e.target.value = '';
+      redirectToLogin();
       return;
     }
 
@@ -222,6 +263,10 @@ const ChatPage = () => {
     }
   };
 
+  if (!token || !customerId) {
+    return null;
+  }
+
   return (
     <div className="page-wrapper">
       <Navbar />
@@ -231,7 +276,10 @@ const ChatPage = () => {
           <header className="support-heading">
             <span className="support-kicker">TRUNG TÂM HỖ TRỢ</span>
             <h1>Chúng tôi luôn sẵn sàng giúp bạn</h1>
-            <p>Trao đổi trực tiếp với cửa hàng về món ăn, thanh toán hoặc tình trạng giao hàng.</p>
+            <p>
+              Trao đổi trực tiếp với cửa hàng về món ăn, thanh toán hoặc tình
+              trạng giao hàng.
+            </p>
           </header>
 
           <div className="support-layout">
@@ -239,16 +287,41 @@ const ChatPage = () => {
               <div className="support-card support-highlight">
                 <div className="support-icon">🎧</div>
                 <h3>Hỗ trợ nhanh</h3>
-                <p>Nhân viên trực tuyến để phản hồi thắc mắc của bạn trong thời gian sớm nhất.</p>
-                <span className="support-online"><i /> Đang hoạt động</span>
+                <p>
+                  Nhân viên trực tuyến để phản hồi thắc mắc của bạn trong thời
+                  gian sớm nhất.
+                </p>
+                <span className="support-online">
+                  <i /> Đang hoạt động
+                </span>
               </div>
 
               <div className="support-card">
                 <h3>Câu hỏi thường gặp</h3>
+
                 <div className="faq-shortcuts">
-                  <button type="button" onClick={() => setInputText('Đơn hàng của tôi đang ở đâu?')}>Tình trạng đơn hàng</button>
-                  <button type="button" onClick={() => setInputText('Tôi cần hỗ trợ thanh toán.')}>Hỗ trợ thanh toán</button>
-                  <button type="button" onClick={() => setInputText('Tôi muốn thay đổi địa chỉ giao hàng.')}>Đổi địa chỉ nhận món</button>
+                  <button
+                    type="button"
+                    onClick={() => setInputText('Đơn hàng của tôi đang ở đâu?')}
+                  >
+                    Tình trạng đơn hàng
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setInputText('Tôi cần hỗ trợ thanh toán.')}
+                  >
+                    Hỗ trợ thanh toán
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setInputText('Tôi muốn thay đổi địa chỉ giao hàng.')
+                    }
+                  >
+                    Đổi địa chỉ nhận món
+                  </button>
                 </div>
               </div>
 
@@ -261,12 +334,15 @@ const ChatPage = () => {
             <div className="chat-container card">
               <div className="chat-header">
                 <div className="chat-avatar">🍔</div>
+
                 <div className="chat-info">
                   <h3>NLU-FoodStack Hỗ trợ</h3>
+
                   <div className="online-status">
                     <span className="online-dot">●</span> Đang hoạt động
                   </div>
                 </div>
+
                 <span className="secure-chat">🔒 Riêng tư</span>
               </div>
 
@@ -275,17 +351,19 @@ const ChatPage = () => {
                   <div className="chat-welcome">
                     <span>👋</span>
                     <h4>Xin chào! Bạn cần hỗ trợ gì?</h4>
-                    <p>Gửi tin nhắn hoặc chọn câu hỏi gợi ý bên trái để bắt đầu.</p>
+                    <p>
+                      Gửi tin nhắn hoặc chọn câu hỏi gợi ý bên trái để bắt đầu.
+                    </p>
                   </div>
                 )}
 
                 {messages.map((msg, index) => {
-                  const myId = user?.userId || user?.id;
+                  const myId = customerId;
                   const isMine = msg.senderId === myId;
                   const isImage = msg.messageType === 'IMAGE' && msg.imageUrl;
 
                   return (
-                    <React.Fragment key={msg.id}>
+                    <React.Fragment key={msg.id || `${msg.sentAt}-${index}`}>
                       {shouldShowDateLabel(messages, index) && (
                         <div className="chat-date-label">
                           {formatDateLabel(msg.sentAt)}
@@ -295,7 +373,11 @@ const ChatPage = () => {
                       <div className={`msg-wrap ${isMine ? 'sent' : 'received'}`}>
                         {!isMine && <div className="msg-avatar">🤵</div>}
 
-                        <div className={`msg-bubble ${isImage ? 'image-bubble' : ''}`}>
+                        <div
+                          className={`msg-bubble ${
+                            isImage ? 'image-bubble' : ''
+                          }`}
+                        >
                           {isImage ? (
                             <img
                               src={getImageSrc(msg.imageUrl)}
@@ -327,7 +409,11 @@ const ChatPage = () => {
                   onChange={handleImageChange}
                 />
 
-                <label htmlFor="chat-image-upload-user" className="image-upload-btn" title="Gửi hình ảnh">
+                <label
+                  htmlFor="chat-image-upload-user"
+                  className="image-upload-btn"
+                  title="Gửi hình ảnh"
+                >
                   📷
                 </label>
 
@@ -340,6 +426,7 @@ const ChatPage = () => {
                 />
 
                 <button
+                  type="button"
                   className="send-btn"
                   onClick={sendMessage}
                   disabled={!inputText.trim()}

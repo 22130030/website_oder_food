@@ -613,11 +613,49 @@
   font-weight: 650;
 }
 
-.benefit-section {
+/* .benefit-section {
   position: relative;
   margin-top: -28px;
   z-index: 4;
   padding-bottom: 42px;
+} */
+
+.hero-section {
+  position: relative;
+  z-index: 2;
+  overflow: visible;
+}
+
+.hero-inner,
+.hero-content,
+.hero-text {
+  position: relative;
+  overflow: visible;
+}
+
+.hero-search,
+.hero-search-suggestions {
+  z-index: 9999;
+}
+
+.benefit-section {
+  position: relative;
+  z-index: 10;
+  overflow: visible;
+  padding-top: 34px;
+  background: #fffaf7;
+}
+
+.benefit-grid {
+  position: relative;
+  z-index: 11;
+  margin-top: 0 !important;
+  transform: none !important;
+}
+
+.benefit-card {
+  position: relative;
+  z-index: 12;
 }
 
 .benefit-grid {
