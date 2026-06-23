@@ -98,8 +98,16 @@ const Navbar = () => {
           )}
 
           {isAuthenticated ? (
-            <div className="user-dropdown" onMouseLeave={() => setDropdownOpen(false)}>
-              <button className="user-btn" onClick={() => setDropdownOpen(o => !o)}>
+            <div
+  className="user-dropdown"
+  onMouseEnter={() => setDropdownOpen(true)}
+  onMouseLeave={() => setDropdownOpen(false)}
+>
+  <button
+    type="button"
+    className="user-btn"
+    onClick={() => setDropdownOpen((o) => !o)}
+  >
                 <div className="user-avatar-mini">
                   {(user?.fullName || user?.email || 'U')[0].toUpperCase()}
                 </div>

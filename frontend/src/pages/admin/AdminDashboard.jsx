@@ -147,7 +147,7 @@ const AdminDashboard = () => {
   ];
 
   return (
-    <AdminLayout title="📊 Dashboard">
+    <AdminLayout title="Dashboard">
       <div className="dashboard-time">
         {currentTime.toLocaleDateString('vi-VN', {
           weekday: 'long',

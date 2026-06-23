@@ -262,7 +262,7 @@ const AdminOrderManagement = () => {
   };
 
   return (
-    <AdminLayout title="📦 Quản lý đơn hàng">
+    <AdminLayout title="Quản lý đơn hàng">
       <div className="admin-order-page">
         <div className="order-stat-grid">
           <div className="order-stat-card card">

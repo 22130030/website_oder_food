@@ -234,7 +234,7 @@ const AdminVoucherManagement = () => {
   };
 
   return (
-    <AdminLayout title="🎟️ Quản lý voucher">
+    <AdminLayout title="Quản lý voucher">
       <div className="admin-voucher-page">
         <div className="voucher-summary-grid">
           <div className="voucher-summary-card card">
