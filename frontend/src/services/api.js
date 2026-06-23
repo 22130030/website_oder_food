@@ -21,7 +21,10 @@ api.interceptors.request.use(
 export const authAPI = {
   register: (data) => api.post('/auth/register', data),
   login: (data) => api.post('/auth/login', data),
-  googleLogin: (idToken) => api.post('/auth/google', { idToken })
+  googleLogin: (idToken) => api.post('/auth/google', { idToken }),
+  forgotPassword: (email) => api.post('/auth/forgot-password', { email }),
+  verifyResetCode: (data) => api.post('/auth/verify-reset-code', data),
+  resetPassword: (data) => api.post('/auth/reset-password', data)
 };
 
 export const foodAPI = {

@@ -47,8 +47,13 @@ public class GoogleAuthService {
             newUser.setPasswordHash(UUID.randomUUID().toString());
             newUser.setRole(Role.CUSTOMER);
             newUser.setIsActive(true);
+            newUser.setEmailVerified(true);
             return userRepository.save(newUser);
         });
+        if (!Boolean.TRUE.equals(user.getEmailVerified())) {
+            user.setEmailVerified(true);
+            userRepository.save(user);
+        }
 
         if (!user.getIsActive()) {
             throw new IllegalStateException("Tài khoản đã bị khóa");

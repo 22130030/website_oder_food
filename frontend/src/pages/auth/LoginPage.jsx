@@ -196,7 +196,7 @@ const LoginPage = () => {
               text="signin_with"
               shape="rectangular"
               locale="vi"
-              width="100%"
+              width="350"
             />
           </div>
 

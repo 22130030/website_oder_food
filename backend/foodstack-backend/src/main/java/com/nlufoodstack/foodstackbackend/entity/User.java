@@ -31,11 +31,15 @@ public class User {
     private String avatarUrl;
 
     @Enumerated(EnumType.STRING)
+
     @Column(nullable = false, length = 20)
     private Role role = Role.CUSTOMER;
 
     @Column(name = "is_active", nullable = false)
     private Boolean isActive = true;
+
+    @Column(name = "email_verified", nullable = false)
+    private Boolean emailVerified = false;
 
     @Column(name = "created_at", insertable = false, updatable = false)
     private LocalDateTime createdAt;
