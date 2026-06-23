@@ -22,6 +22,7 @@ import tools.jackson.databind.ObjectMapper;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -35,6 +36,7 @@ public class CheckoutService {
     private final PaymentTransactionRepository paymentRepo;
     private final VnpayService vnpayService;
     private final VoucherRepository voucherRepository;
+    private final EmailService emailService;
 
     private final ObjectMapper objectMapper = new ObjectMapper();
 
@@ -44,7 +46,8 @@ public class CheckoutService {
             OrderItemRepository orderItemRepo,
             PaymentTransactionRepository paymentRepo,
             VnpayService vnpayService,
-            VoucherRepository voucherRepository
+            VoucherRepository voucherRepository,
+            EmailService emailService
     ) {
         this.cartRepo = cartRepo;
         this.orderRepo = orderRepo;
@@ -52,6 +55,7 @@ public class CheckoutService {
         this.paymentRepo = paymentRepo;
         this.vnpayService = vnpayService;
         this.voucherRepository = voucherRepository;
+        this.emailService = emailService;
     }
 
     @Transactional
@@ -123,6 +127,8 @@ public class CheckoutService {
 
         order = orderRepo.save(order);
 
+        List<OrderItem> createdOrderItems = new ArrayList<>();
+
         for (CartItem ci : cart) {
             FoodItem food = ci.getFoodItem();
             BigDecimal price = effectivePrice(food);
@@ -137,7 +143,7 @@ public class CheckoutService {
             item.subtotal = price.multiply(BigDecimal.valueOf(ci.getQuantity()));
             item.note = ci.getNote();
 
-            orderItemRepo.save(item);
+            createdOrderItems.add(orderItemRepo.save(item));
         }
 
         PaymentTransaction tx = new PaymentTransaction();
@@ -158,6 +164,7 @@ public class CheckoutService {
         } else {
             increaseVoucherUsedCount(order.voucherCode);
             cartRepo.deleteAll(cart);
+            emailService.sendOrderConfirmation(order, createdOrderItems);
         }
 
         return new CheckoutResponse(
@@ -196,6 +203,7 @@ public class CheckoutService {
         tx.rawResponse = toJson(params);
         tx.updatedAt = LocalDateTime.now();
 
+
         if (success) {
             tx.status = "SUCCESS";
 
@@ -205,6 +213,7 @@ public class CheckoutService {
 
             if (!wasAlreadySuccess) {
                 increaseVoucherUsedCount(order.voucherCode);
+                emailService.sendOrderConfirmation(order, orderItemRepo.findByOrder(order));
             }
 
             Long userId = paymentRepo.findUserIdByVnpayTxnRef(txnRef)

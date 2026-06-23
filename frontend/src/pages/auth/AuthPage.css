@@ -321,11 +321,24 @@
 }
 
 .google-login-wrapper > div {
-  width: 100% !important;
+  width: auto !important;
+  max-width: 100%;
 }
 
 .google-login-wrapper iframe {
   width: 100% !important;
+}
+
+.google-login-container {
+  width: 100%;
+  max-width: 360px;
+  margin: 0 auto;
+  padding: 6px;
+  border-radius: 12px;
+  background: #fff;
+  box-shadow: 0 10px 30px rgba(16,24,40,0.06);
+  display: block;
+  overflow: hidden;
 }
 
 .auth-google-top {
@@ -504,4 +517,125 @@
   .btn-social {
     width: 100%;
   }
+}
+/* =========================
+   FORGOT PASSWORD PAGE
+========================= */
+
+.auth-forgot-page .auth-form-container {
+  max-width: 500px;
+}
+
+.auth-forgot-page .input-shell {
+  position: relative;
+}
+
+.auth-forgot-page .input-icon {
+  position: absolute;
+  left: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 2;
+}
+
+.auth-forgot-page input {
+  width: 100%;
+  height: 54px;
+  padding-left: 46px;
+  border: 1px solid #ebd8ca;
+  border-radius: 16px;
+  background: #fffdfb;
+  transition: all .25s ease;
+}
+
+.auth-forgot-page input:focus {
+  border-color: #f06f46;
+  box-shadow: 0 0 0 4px rgba(244,81,57,.12);
+}
+
+.auth-forgot-page .auth-submit-btn {
+  width: 100%;
+  min-height: 54px;
+  border: none;
+  border-radius: 16px;
+  color: #fff;
+  font-weight: 700;
+  cursor: pointer;
+  background: linear-gradient(
+    135deg,
+    #f45139,
+    #ff9c45
+  );
+}
+
+.auth-forgot-page .auth-submit-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 16px 30px rgba(234,88,12,.25);
+}
+
+.auth-forgot-page .btn-secondary {
+  width: 100%;
+  min-height: 52px;
+  margin-top: 12px;
+  border-radius: 16px;
+  border: 1px solid #f3c9b7;
+  background: #fff7f1;
+  color: #e75035;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.auth-forgot-page .alert {
+  margin-bottom: 18px;
+  padding: 12px 15px;
+  border-radius: 14px;
+}
+
+.auth-forgot-page .alert-error {
+  background: #fff1f1;
+  border: 1px solid #f7c9c9;
+  color: #c62828;
+}
+
+.auth-forgot-page .alert-success {
+  background: #edf9ef;
+  border: 1px solid #ccebd1;
+  color: #2e7d32;
+}
+
+.auth-forgot-page .auth-divider {
+  position: relative;
+  margin: 20px 0;
+  text-align: center;
+}
+
+.auth-forgot-page .auth-divider::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 50%;
+  height: 1px;
+  background: #eadfd7;
+}
+
+.auth-forgot-page .auth-divider span {
+  position: relative;
+  z-index: 1;
+  background: white;
+  padding: 0 12px;
+  color: #999;
+}
+
+.auth-forgot-page .auth-switch {
+  text-align: center;
+}
+
+.auth-forgot-page .link-primary {
+  color: #ef5a35;
+  font-weight: 700;
+}
+
+.auth-forgot-page .link-primary:hover {
+  text-decoration: underline;
 }
