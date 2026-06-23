@@ -7,6 +7,7 @@ import com.nlufoodstack.foodstackbackend.repository.VoucherRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import com.nlufoodstack.foodstackbackend.annotation.AdminLogAction;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -47,6 +48,7 @@ public class AdminVoucherController {
     }
 
     @PostMapping
+    @AdminLogAction(action = "CREATE", target = "VOUCHER")
     public ResponseEntity<?> createVoucher(@RequestBody VoucherRequest request) {
         try {
             validateRequest(request, null);
@@ -80,6 +82,7 @@ public class AdminVoucherController {
     }
 
     @PutMapping("/{id}")
+    @AdminLogAction(action = "UPDATE", target = "VOUCHER")
     public ResponseEntity<?> updateVoucher(
             @PathVariable Long id,
             @RequestBody VoucherRequest request
@@ -118,6 +121,7 @@ public class AdminVoucherController {
     }
 
     @PatchMapping("/{id}/toggle")
+    @AdminLogAction(action = "TOGGLE", target = "VOUCHER")
     public ResponseEntity<?> toggleVoucher(@PathVariable Long id) {
         try {
             Voucher voucher = voucherRepository.findById(id)
@@ -139,6 +143,7 @@ public class AdminVoucherController {
     }
 
     @DeleteMapping("/{id}")
+    @AdminLogAction(action = "DELETE", target = "VOUCHER")
     public ResponseEntity<?> deleteVoucher(@PathVariable Long id) {
         try {
             Voucher voucher = voucherRepository.findById(id)

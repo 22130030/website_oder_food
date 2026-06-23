@@ -35,6 +35,7 @@ import AdminUserManagement from '../pages/admin/AdminUserManagement';
 import AdminChatManagement from '../pages/admin/AdminChatManagement';
 import AdminStatistics from '../pages/admin/AdminStatistics';
 import AdminVoucherManagement from '../pages/admin/AdminVoucherManagement';
+import AdminLogManagement from '../pages/admin/AdminLogManagement';
 
 const getStoredUserId = () => {
   const userRaw = localStorage.getItem('user');
@@ -111,6 +112,7 @@ function App() {
             <Route path="/admin/chat" element={<AdminChatManagement />} />
             <Route path="/admin/vouchers" element={<AdminVoucherManagement />} />
             <Route path="/admin/statistics" element={<AdminStatistics />} />
+            <Route path="/admin/logs" element={<AdminLogManagement />} />
           </Routes>
 
           <ToastContainer

@@ -1,12 +1,13 @@
 package com.nlufoodstack.foodstackbackend.controller.admin;
 
+import com.nlufoodstack.foodstackbackend.annotation.AdminLogAction;
 import com.nlufoodstack.foodstackbackend.dto.request.AdminUserRequest;
 import com.nlufoodstack.foodstackbackend.dto.reponse.AdminUserResponse;
 import com.nlufoodstack.foodstackbackend.entity.Role;
 import com.nlufoodstack.foodstackbackend.service.AdminUserService;
 import org.springframework.web.bind.annotation.*;
+import com.nlufoodstack.foodstackbackend.dto.reponse.AdminUserResponse;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -33,6 +34,7 @@ public class AdminUserController {
     }
 
     @PutMapping("/{id}")
+    @AdminLogAction(action = "UPDATE", target = "USER")
     public AdminUserResponse updateUser(
             @PathVariable Long id,
             @RequestBody AdminUserRequest request
@@ -41,11 +43,13 @@ public class AdminUserController {
     }
 
     @PatchMapping("/{id}/toggle-active")
+    @AdminLogAction(action = "TOGGLE", target = "USER_STATUS")
     public AdminUserResponse toggleActive(@PathVariable Long id) {
         return adminUserService.toggleActive(id);
     }
 
     @PatchMapping("/{id}/role")
+    @AdminLogAction(action = "UPDATE", target = "USER_ROLE")
     public AdminUserResponse updateRole(
             @PathVariable Long id,
             @RequestBody Map<String, String> body

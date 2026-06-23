@@ -23,6 +23,7 @@ const MENU_ITEMS = [
   { path: '/admin/chat', dot: 'orange', label: 'Quản lý chat' },
   { path: '/admin/statistics', dot: 'orange', label: 'Thống kê & Báo cáo' },
   { path: '/admin/vouchers', dot: 'orange', label: 'Quản lý voucher' },
+  { path: '/admin/logs', dot: 'orange', label: 'Nhật ký hoạt động' },
 ];
 
 const AdminSidebar = () => {

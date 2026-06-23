@@ -139,4 +139,7 @@ export const userVoucherAPI = {
   applyVoucher: (data) => api.post('/user/vouchers/apply', data),
 };
 
+export const adminLogAPI = {
+  getLogs: (params = {}) => api.get('/admin/logs', { params }),
+};
 export default api;
