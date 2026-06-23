@@ -5,6 +5,7 @@ import com.nlufoodstack.foodstackbackend.dto.request.FoodRequest;
 import com.nlufoodstack.foodstackbackend.entity.Category;
 import com.nlufoodstack.foodstackbackend.service.FoodAdminService;
 import org.springframework.web.bind.annotation.*;
+import com.nlufoodstack.foodstackbackend.annotation.AdminLogAction;
 
 import java.util.List;
 
@@ -29,22 +30,26 @@ public class AdminFoodController {
     }
 
     @PostMapping("/foods")
+    @AdminLogAction(action = "CREATE", target = "FOOD")
     public FoodResponse createFood(@RequestBody FoodRequest request) {
         return foodAdminService.createFood(request);
     }
 
     @PutMapping("/foods/{id}")
+    @AdminLogAction(action = "UPDATE", target = "FOOD")
     public FoodResponse updateFood(@PathVariable Long id, @RequestBody FoodRequest request) {
         return foodAdminService.updateFood(id, request);
     }
 
     @DeleteMapping("/foods/{id}")
+    @AdminLogAction(action = "DELETE", target = "FOOD")
     public String deleteFood(@PathVariable Long id) {
         foodAdminService.deleteFood(id);
         return "Xóa món ăn thành công";
     }
 
     @PatchMapping("/foods/{id}/availability")
+    @AdminLogAction(action = "TOGGLE", target = "FOOD")
     public FoodResponse toggleAvailability(@PathVariable Long id) {
         return foodAdminService.toggleAvailability(id);
     }
