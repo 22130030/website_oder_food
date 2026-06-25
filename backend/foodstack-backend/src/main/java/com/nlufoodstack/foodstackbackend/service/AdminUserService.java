@@ -7,6 +7,7 @@ import com.nlufoodstack.foodstackbackend.entity.User;
 import com.nlufoodstack.foodstackbackend.repository.UserRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.dao.DataIntegrityViolationException;
 
 import java.util.List;
 
@@ -45,6 +46,49 @@ public class AdminUserService {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy người dùng"));
         return toResponse(user);
+    }
+    public AdminUserResponse createUser(AdminUserRequest request) {
+        if (request.getFullName() == null || request.getFullName().trim().isEmpty()) {
+            throw new RuntimeException("Vui lòng nhập họ tên");
+        }
+
+        if (request.getEmail() == null || request.getEmail().trim().isEmpty()) {
+            throw new RuntimeException("Vui lòng nhập email");
+        }
+
+        if (request.getNewPassword() == null || request.getNewPassword().trim().length() < 6) {
+            throw new RuntimeException("Mật khẩu phải có ít nhất 6 ký tự");
+        }
+
+        String email = request.getEmail().trim().toLowerCase();
+
+        if (userRepository.existsByEmail(email)) {
+            throw new RuntimeException("Email này đã tồn tại");
+        }
+
+        User user = new User();
+        user.setFullName(request.getFullName().trim());
+        user.setEmail(email);
+        user.setPhone(request.getPhone());
+        user.setAvatarUrl(request.getAvatarUrl());
+        user.setRole(request.getRole() != null ? request.getRole() : Role.CUSTOMER);
+        user.setIsActive(request.getIsActive() != null ? request.getIsActive() : true);
+        user.setEmailVerified(true);
+
+        user.setPasswordHash(passwordEncoder.encode(request.getNewPassword().trim()));
+
+        return toResponse(userRepository.save(user));
+    }
+
+    public void deleteUser(Long id) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy người dùng"));
+
+        try {
+            userRepository.delete(user);
+        } catch (DataIntegrityViolationException e) {
+            throw new RuntimeException("Không thể xóa tài khoản này vì đã có dữ liệu liên quan. Bạn có thể khóa tài khoản thay thế.");
+        }
     }
 
     public AdminUserResponse updateUser(Long id, AdminUserRequest request) {

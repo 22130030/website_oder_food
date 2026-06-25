@@ -64,9 +64,11 @@ export const getFoods = (params = {}) => api.get('/foods', { params });
 export const adminUserAPI = {
   getUsers: (keyword = '') => api.get('/admin/users', { params: { keyword } }),
   getUserById: (id) => api.get(`/admin/users/${id}`),
+  createUser: (data) => api.post('/admin/users', data),
   updateUser: (id, data) => api.put(`/admin/users/${id}`, data),
   toggleActive: (id) => api.patch(`/admin/users/${id}/toggle-active`),
   updateRole: (id, role) => api.patch(`/admin/users/${id}/role`, { role }),
+  deleteUser: (id) => api.delete(`/admin/users/${id}`),
 };
 
 export const chatAPI = {
