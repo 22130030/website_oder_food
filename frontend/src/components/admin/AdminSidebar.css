@@ -214,7 +214,7 @@
   box-shadow: 0 0 12px rgba(255, 210, 106, 0.55);
 }
 
-.nav-icon {
+/* .nav-icon {
   width: 28px;
   height: 28px;
   flex-shrink: 0;
@@ -223,7 +223,7 @@
   border-radius: 10px;
   font-size: 15px;
   background: rgba(255, 255, 255, 0.06);
-}
+} */
 .admin-nav-dot {
   width: 10px;
   height: 10px;

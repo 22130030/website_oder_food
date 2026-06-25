@@ -8,6 +8,7 @@ import com.nlufoodstack.foodstackbackend.service.AdminUserService;
 import org.springframework.web.bind.annotation.*;
 import com.nlufoodstack.foodstackbackend.dto.reponse.AdminUserResponse;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -33,6 +34,12 @@ public class AdminUserController {
         return adminUserService.getUserById(id);
     }
 
+    @PostMapping
+    @AdminLogAction(action = "CREATE", target = "USER")
+    public AdminUserResponse createUser(@RequestBody AdminUserRequest request) {
+        return adminUserService.createUser(request);
+    }
+
     @PutMapping("/{id}")
     @AdminLogAction(action = "UPDATE", target = "USER")
     public AdminUserResponse updateUser(
@@ -56,5 +63,15 @@ public class AdminUserController {
     ) {
         Role role = Role.valueOf(body.get("role"));
         return adminUserService.updateRole(id, role);
+    }
+
+    @DeleteMapping("/{id}")
+    @AdminLogAction(action = "DELETE", target = "USER")
+    public Map<String, String> deleteUser(@PathVariable Long id) {
+        adminUserService.deleteUser(id);
+
+        Map<String, String> response = new HashMap<>();
+        response.put("message", "Xóa tài khoản thành công");
+        return response;
     }
 }
