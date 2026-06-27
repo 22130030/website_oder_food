@@ -56,7 +56,9 @@ public class SecurityConfig {
         config.setAllowCredentials(true);
         config.setAllowedOrigins(List.of(
                 "http://localhost:3000",
-                "http://localhost:5173"
+                "https://localhost:3000",
+                "http://localhost:5173",
+                "https://localhost:5173"
         ));
         config.setAllowedHeaders(List.of("*"));
         config.setAllowedMethods(List.of(
