@@ -9,10 +9,12 @@ const api = axios.create({
 
 api.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
+
     return config;
   },
   (error) => Promise.reject(error)
@@ -25,10 +27,11 @@ export const authAPI = {
 
   login: (data) => api.post('/auth/login', data),
   googleLogin: (idToken) => api.post('/auth/google', { idToken }),
+  facebookLogin: (accessToken) => api.post('/auth/facebook', { accessToken }),
 
   forgotPassword: (email) => api.post('/auth/forgot-password', { email }),
   verifyResetCode: (data) => api.post('/auth/verify-reset-code', data),
-  resetPassword: (data) => api.post('/auth/reset-password', data)
+  resetPassword: (data) => api.post('/auth/reset-password', data),
 };
 
 export const foodAPI = {
@@ -59,6 +62,7 @@ export const uploadAPI = {
     });
   },
 };
+
 export const getFoods = (params = {}) => api.get('/foods', { params });
 
 export const adminUserAPI = {
@@ -76,7 +80,8 @@ export const chatAPI = {
   getConversations: () => api.get('/chat/admin/conversations'),
 
   getAdminUnreadCount: () => api.get('/chat/admin/unread-count'),
-  getCustomerUnreadCount: (customerId) => api.get(`/chat/customer/${customerId}/unread-count`),
+  getCustomerUnreadCount: (customerId) =>
+    api.get(`/chat/customer/${customerId}/unread-count`),
 
   markAdminConversationRead: (customerId) =>
     api.patch(`/chat/admin/conversations/${customerId}/read`),
@@ -91,6 +96,7 @@ export const chatAPI = {
       },
     }),
 };
+
 export const profileAPI = {
   getProfile: (userId) => api.get(`/profile/${userId}`),
 
@@ -118,9 +124,11 @@ export const adminOrderAPI = {
       cancelReason,
     }),
 };
+
 export const adminStatisticsAPI = {
   getOverview: () => api.get('/admin/statistics'),
 };
+
 export const adminDashboardAPI = {
   getDashboard: () => api.get('/admin/dashboard/overview'),
 };
@@ -144,4 +152,5 @@ export const userVoucherAPI = {
 export const adminLogAPI = {
   getLogs: (params = {}) => api.get('/admin/logs', { params }),
 };
+
 export default api;

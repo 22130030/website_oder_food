@@ -14,6 +14,8 @@ import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import com.nlufoodstack.foodstackbackend.dto.request.FacebookLoginRequest;
+import com.nlufoodstack.foodstackbackend.service.FacebookAuthService;
 
 import java.util.Map;
 
@@ -23,10 +25,12 @@ public class AuthController {
 
     private final AuthService authService;
     private final GoogleAuthService googleAuthService;
+    private final FacebookAuthService facebookAuthService;
 
-    public AuthController(AuthService authService, GoogleAuthService googleAuthService) {
+    public AuthController(AuthService authService, GoogleAuthService googleAuthService, FacebookAuthService facebookAuthService) {
         this.authService = authService;
         this.googleAuthService = googleAuthService;
+        this.facebookAuthService = facebookAuthService;
     }
 
     @PostMapping("/register")
@@ -67,6 +71,10 @@ public class AuthController {
     @PostMapping("/google")
     public ResponseEntity<AuthResponse> googleLogin(@Valid @RequestBody GoogleLoginRequest request) {
         return ResponseEntity.ok(googleAuthService.loginWithGoogle(request.getIdToken()));
+    }
+    @PostMapping("/facebook")
+    public ResponseEntity<AuthResponse> facebookLogin(@Valid @RequestBody FacebookLoginRequest request) {
+        return ResponseEntity.ok(facebookAuthService.loginWithFacebook(request.getAccessToken()));
     }
 
     @GetMapping("/ping")
